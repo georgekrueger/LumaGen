@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<JUCERPROJECT id="E7sl03" name="LumaGen" projectType="guiapp" version="1.0.0"
+              bundleIdentifier="com.yourcompany.LumaGen" jucerVersion="3.0.0"
+              defines="JUCE_PLUGINHOST_VST=1 JUCE_PLUGINHOST_AU=1">
+  <EXPORTFORMATS>
+    <VS2010 targetFolder="Builds/VisualStudio2010" libraryType="1" juceFolder="..\juce\modules">
+      <CONFIGURATIONS>
+        <CONFIGURATION name="Debug" winWarningLevel="4" generateManifest="1" winArchitecture="32-bit"
+                       isDebug="1" optimisation="1" targetName="LumaGen" headerPath="..\..\..\vstsdk2.4"/>
+        <CONFIGURATION name="Release" winWarningLevel="4" generateManifest="1" winArchitecture="32-bit"
+                       isDebug="0" optimisation="2" targetName="LumaGen" headerPath="..\..\..\vstsdk2.4"/>
+      </CONFIGURATIONS>
+    </VS2010>
+  </EXPORTFORMATS>
+  <MAINGROUP id="pPaUyH" name="LumaGen">
+    <GROUP id="{71CB56DF-9CC4-6192-BF09-236E0B6F12C1}" name="Source">
+      <FILE id="ojW7Su" name="FilterGraph.cpp" compile="1" resource="0" file="Source/FilterGraph.cpp"/>
+      <FILE id="KvNZnk" name="FilterGraph.h" compile="0" resource="0" file="Source/FilterGraph.h"/>
+      <FILE id="bu68jy" name="GraphEditorPanel.cpp" compile="1" resource="0"
+            file="Source/GraphEditorPanel.cpp"/>
+      <FILE id="P3UPxz" name="GraphEditorPanel.h" compile="0" resource="0"
+            file="Source/GraphEditorPanel.h"/>
+      <FILE id="cHu3Mu" name="HostStartup.cpp" compile="1" resource="0" file="Source/HostStartup.cpp"/>
+      <FILE id="HpUAh4" name="InternalFilters.cpp" compile="1" resource="0"
+            file="Source/InternalFilters.cpp"/>
+      <FILE id="lYfFEo" name="InternalFilters.h" compile="0" resource="0"
+            file="Source/InternalFilters.h"/>
+      <FILE id="EH38Zg" name="MainHostWindow.cpp" compile="1" resource="0"
+            file="Source/MainHostWindow.cpp"/>
+      <FILE id="Ax2N6f" name="MainHostWindow.h" compile="0" resource="0"
+            file="Source/MainHostWindow.h"/>
+    </GROUP>
+  </MAINGROUP>
+  <MODULES>
+    <MODULE id="juce_core" showAllCode="1" useLocalCopy="1"/>
+    <MODULE id="juce_events" showAllCode="1" useLocalCopy="1"/>
+    <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="1"/>
+    <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="1"/>
+    <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="1"/>
+    <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="1"/>
+    <MODULE id="juce_gui_audio" showAllCode="1" useLocalCopy="1"/>
+    <MODULE id="juce_cryptography" showAllCode="1" useLocalCopy="1"/>
+    <MODULE id="juce_video" showAllCode="1" useLocalCopy="1"/>
+    <MODULE id="juce_opengl" showAllCode="1" useLocalCopy="1"/>
+    <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="1"/>
+    <MODULE id="juce_audio_devices" showAllCode="1" useLocalCopy="1"/>
+    <MODULE id="juce_audio_formats" showAllCode="1" useLocalCopy="1"/>
+    <MODULE id="juce_audio_processors" showAllCode="1" useLocalCopy="1"/>
+    <MODULE id="juce_audio_utils" showAllCode="1" useLocalCopy="1"/>
+  </MODULES>
+  <JUCEOPTIONS/>
+</JUCERPROJECT>

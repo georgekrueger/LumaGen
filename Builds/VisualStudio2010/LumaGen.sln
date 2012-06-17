@@ -1,0 +1,19 @@
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{83B7EE5E-CBAC-355B-CA90-573C8B400C9E}") = "LumaGen", "LumaGen.vcxproj", "{F87FEA7D-6E4C-03A6-A8A3-C43E15E63BD8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F87FEA7D-6E4C-03A6-A8A3-C43E15E63BD8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F87FEA7D-6E4C-03A6-A8A3-C43E15E63BD8}.Debug|Win32.Build.0 = Debug|Win32
+		{F87FEA7D-6E4C-03A6-A8A3-C43E15E63BD8}.Release|Win32.ActiveCfg = Release|Win32
+		{F87FEA7D-6E4C-03A6-A8A3-C43E15E63BD8}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
