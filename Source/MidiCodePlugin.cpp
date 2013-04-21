@@ -24,6 +24,8 @@ void MidiCodePlugin::fillInPluginDescription (PluginDescription& d) const
 
 void MidiCodePlugin::prepareToPlay (double sampleRate, int estimatedSamplesPerBlock)
 {
+	sampleRate_ = sampleRate;
+	sampleCount_ = 0;
 }
 
 void MidiCodePlugin::releaseResources()
@@ -32,6 +34,16 @@ void MidiCodePlugin::releaseResources()
 
 void MidiCodePlugin::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
+	int numSamples = buffer.getNumSamples();
+	int sampleCountPre = sampleCount_;
+	sampleCount_ += numSamples;
+	double seconds = sampleCount_ / sampleRate_;
+	if (sampleCount_ >= 44100) {
+		MidiMessage msg = MidiMessage::noteOn(0, 60, 1.0f);
+		int sampleInFrame = 44100 - sampleCountPre;
+		midiMessages.addEvent (msg, sampleInFrame);
+		sampleCount_ -= 44100;
+	}
 }
 
 

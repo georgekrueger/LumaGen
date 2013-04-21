@@ -32,6 +32,10 @@ public:
 	virtual void changeProgramName (int index, const String& newName) {}
 	virtual void getStateInformation (juce::MemoryBlock& destData) {}
 	virtual void setStateInformation (const void* data, int sizeInBytes) {}
+
+private:
+	double sampleRate_;
+	int sampleCount_;
 };
 
 class GFormatPluginFormat   : public AudioPluginFormat
