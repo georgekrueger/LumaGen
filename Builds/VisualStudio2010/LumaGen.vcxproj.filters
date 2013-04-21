@@ -1401,6 +1401,12 @@
     <ClCompile Include="..\..\Source\MidiCodePlugin.cpp">
       <Filter>LumaGen\Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source\JSFuncs.cpp">
+      <Filter>LumaGen\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Music.cpp">
+      <Filter>LumaGen\Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source\FilterGraph.h">
@@ -2670,6 +2676,12 @@
       <Filter>Juce Library Code</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\MidiCodePlugin.h">
+      <Filter>LumaGen\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Music.h">
+      <Filter>LumaGen\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\JSFuncs.h">
       <Filter>LumaGen\Source</Filter>
     </ClInclude>
   </ItemGroup>
