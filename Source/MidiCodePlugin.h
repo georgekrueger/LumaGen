@@ -1,6 +1,8 @@
 #ifndef MIDICODEPLUGIN_H
 #define MIDICODEPLUGIN_H
 
+namespace Music { class Track; }
+
 class MidiCodePlugin : public AudioPluginInstance
 {
 public:
@@ -36,6 +38,7 @@ public:
 private:
 	double sampleRate_;
 	int sampleCount_;
+	Music::Track* track_;
 };
 
 class GFormatPluginFormat   : public AudioPluginFormat

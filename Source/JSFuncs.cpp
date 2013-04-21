@@ -10,9 +10,7 @@
 using namespace v8;
 using namespace std;
 
-list<boost::shared_ptr<SongTrack> > gTracks;
-
-list<boost::shared_ptr<SongTrack> >& GetTracks() { return gTracks; }
+Music::Track* gTrack = NULL;
 
 // Note
 static Persistent<ObjectTemplate> gNoteTemplate;
@@ -87,37 +85,43 @@ v8::Handle<v8::Value> Print(const v8::Arguments& args) {
 
 // Executes a string within the current v8 context.
 bool ExecuteString(v8::Handle<v8::String> source,
-                   v8::Handle<v8::Value> name,
-                   bool print_result,
-                   bool report_exceptions) {
-  v8::HandleScope handle_scope;
-  v8::TryCatch try_catch;
-  v8::Handle<v8::Script> script = v8::Script::Compile(source, name);
-  if (script.IsEmpty()) {
-    // Print errors that happened during compilation.
-    if (report_exceptions)
-      ReportException(&try_catch);
-    return false;
-  } else {
-    v8::Handle<v8::Value> result = script->Run();
-    if (result.IsEmpty()) {
-      assert(try_catch.HasCaught());
-      // Print errors that happened during execution.
-      if (report_exceptions)
-        ReportException(&try_catch);
-      return false;
-    } else {
-      assert(!try_catch.HasCaught());
-      if (print_result && !result->IsUndefined()) {
-        // If all went well and the result wasn't undefined then print
-        // the returned value.
-        v8::String::Utf8Value str(result);
-        const char* cstr = ToCString(str);
-        printf("%s\n", cstr);
-      }
-      return true;
-    }
-  }
+	v8::Handle<v8::Value> name,
+	bool print_result,
+	bool report_exceptions,
+	Music::Track* track)
+{
+	gTrack = track;
+
+	v8::HandleScope handle_scope;
+	v8::TryCatch try_catch;
+	v8::Handle<v8::Script> script = v8::Script::Compile(source, name);
+	if (script.IsEmpty()) {
+		// Print errors that happened during compilation.
+		if (report_exceptions)
+			ReportException(&try_catch);
+		return false;
+	} else {
+		v8::Handle<v8::Value> result = script->Run();
+		if (result.IsEmpty()) {
+			assert(try_catch.HasCaught());
+			// Print errors that happened during execution.
+			if (report_exceptions)
+				ReportException(&try_catch);
+			return false;
+		} else {
+			assert(!try_catch.HasCaught());
+			if (print_result && !result->IsUndefined()) {
+				// If all went well and the result wasn't undefined then print
+				// the returned value.
+				v8::String::Utf8Value str(result);
+				const char* cstr = ToCString(str);
+				printf("%s\n", cstr);
+			}
+			return true;
+		}
+	}
+
+	gTrack = NULL;
 }
 
 // Reads a file into a v8 string.
@@ -421,6 +425,27 @@ v8::Handle<v8::Value> makeStaticPattern(const v8::Arguments& args)
 	return scope.Close(result);
 }
 
+v8::Handle<v8::Value> playPattern(const v8::Arguments& args) 
+{
+	HandleScope scope;
+
+	MusicObject* holder = ExtractObjectFromJSWrapper<MusicObject>(args.Holder());
+	Music::GeneratorSharedPtr* gen = boost::get<Music::GeneratorSharedPtr>(holder);
+	if (!gen) {
+		cerr << "playPattern: this object is not a generator!" << endl;
+		return v8::Undefined();
+	}
+	/*Music::PatternGenSharedPtr patGen = dynamic_cast<Music::PatternGenSharedPtr>(gen);
+	if (!patGen) {
+		cerr << "playPattern: this object is not a pattern generator!" << endl;
+		return v8::Undefined();
+	}*/
+	
+	gTrack->Add(*gen, Music::BAR);
+
+	return v8::Undefined();
+}
+
 Handle<ObjectTemplate> MakePatternTemplate() {
 	HandleScope handle_scope;
 
@@ -429,6 +454,7 @@ Handle<ObjectTemplate> MakePatternTemplate() {
 
 	// Add accessors for each of the fields
 	result->Set(v8::String::New("MakeStatic"), v8::FunctionTemplate::New(makeStaticPattern));
+	result->Set(v8::String::New("Play"), v8::FunctionTemplate::New(playPattern));
 
 	// Again, return the result through the current handle scope.
 	return handle_scope.Close(result);
@@ -482,21 +508,6 @@ Handle<Value> MakePattern(const Arguments& args) {
 	// we need to call Close to let one, the result, escape into the
 	// outer handle scope.
 	return handle_scope.Close(result);
-}
-
-v8::Handle<v8::Value> addPatternToTrack(const v8::Arguments& args) 
-{
-	HandleScope scope;
-
-	MusicObject* holder = ExtractObjectFromJSWrapper<MusicObject>(args.Holder());
-	boost::shared_ptr<SongTrack> track = boost::get< boost::shared_ptr<SongTrack> >(*holder);
-
-	holder = ExtractObjectFromJSWrapper<MusicObject>(args[0]->ToObject());
-	Music::GeneratorSharedPtr patternGen = boost::get<Music::GeneratorSharedPtr>(*holder);
-	
-	track->track->Add(patternGen, Music::BAR);
-
-	return v8::Undefined();
 }
 
 v8::Handle<v8::Value> removePatternFromTrack(const v8::Arguments& args) 

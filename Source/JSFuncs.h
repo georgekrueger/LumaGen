@@ -6,13 +6,10 @@
 #include <boost/shared_ptr.hpp>
 
 namespace Music { class Track; }
-class Plugin;
 
 struct SongTrack
 {
 	Music::Track* track;
-	Plugin* plugin;
-	float volume;
 };
 
 std::list<boost::shared_ptr<SongTrack> >& GetTracks();
@@ -21,7 +18,8 @@ v8::Persistent<v8::Context> CreateV8Context();
 bool ExecuteString(v8::Handle<v8::String> source,
                    v8::Handle<v8::Value> name,
                    bool print_result,
-                   bool report_exceptions);
+                   bool report_exceptions,
+				   Music::Track*);
 v8::Handle<v8::Value> Print(const v8::Arguments& args);
 v8::Handle<v8::String> ReadFile(const char* name);
 void ReportException(v8::TryCatch* handler);

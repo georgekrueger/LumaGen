@@ -27,6 +27,7 @@
 #include "MainHostWindow.h"
 #include "InternalFilters.h"
 #include "MidiCodePlugin.h"
+#include "JSFuncs.h"
 
 #if ! (JUCE_PLUGINHOST_VST || JUCE_PLUGINHOST_AU)
  #error "If you're building the audio plugin host, you probably want to enable VST and/or AU support"
@@ -35,7 +36,7 @@
 
 ApplicationCommandManager* commandManager = nullptr;
 ApplicationProperties* appProperties = nullptr;
-
+v8::Persistent<v8::Context> context;
 
 //==============================================================================
 class PluginHostApp  : public JUCEApplication
@@ -64,6 +65,17 @@ public:
         AudioPluginFormatManager::getInstance()->addFormat (new InternalPluginFormat());
 		AudioPluginFormatManager::getInstance()->addFormat (new GFormatPluginFormat());
 
+		// init v8
+		v8::HandleScope handle_scope;
+		context = CreateV8Context();
+
+		if (context.IsEmpty()) {
+			printf("Error creating context\n");
+			return;
+		}
+		context->Enter();
+		// end v8 init
+
         mainWindow = new MainHostWindow();
         //mainWindow->setUsingNativeTitleBar (true);
 
@@ -89,6 +101,11 @@ public:
 
         deleteAndZero (commandManager);
         deleteAndZero (appProperties);
+
+		// clean up context
+		context->Exit();
+		context.Dispose();
+		v8::V8::Dispose();
     }
 
     void systemRequestedQuit()
