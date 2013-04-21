@@ -26,6 +26,7 @@
 #include "JuceHeader.h"
 #include "MainHostWindow.h"
 #include "InternalFilters.h"
+#include "MidiCodePlugin.h"
 
 
 //==============================================================================
@@ -96,6 +97,9 @@ MainHostWindow::MainHostWindow()
 
     InternalPluginFormat internalFormat;
     internalFormat.getAllTypes (internalTypes);
+
+	GFormatPluginFormat gFormat;
+	gFormat.getAllTypes(gFormatTypes);
 
     ScopedPointer<XmlElement> savedPluginList (appProperties->getUserSettings()->getXmlValue ("pluginList"));
 
@@ -280,10 +284,13 @@ void MainHostWindow::createPlugin (const PluginDescription* desc, int x, int y)
 
 void MainHostWindow::addPluginsToMenu (PopupMenu& m) const
 {
-    for (int i = 0; i < internalTypes.size(); ++i)
+	int i;
+    for (i = 0; i < internalTypes.size(); ++i) {
         m.addItem (i + 1, internalTypes.getUnchecked(i)->name);
-
+	}
     m.addSeparator();
+	m.addItem(i+1, gFormatTypes.getUnchecked(0)->name);
+	m.addSeparator();
 
     knownPluginList.addToMenu (m, pluginSortMethod);
 }
@@ -294,6 +301,10 @@ const PluginDescription* MainHostWindow::getChosenType (const int menuID) const
     {
         return internalTypes [menuID - 1];
     }
+	else if (menuID == 1 + internalTypes.size())
+	{
+		return gFormatTypes[0];
+	}
     else
     {
         return knownPluginList.getType (knownPluginList.getIndexChosenByMenu (menuID));

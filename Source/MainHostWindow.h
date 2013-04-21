@@ -90,6 +90,7 @@ private:
     AudioDeviceManager deviceManager;
 
     OwnedArray <PluginDescription> internalTypes;
+	OwnedArray <PluginDescription> gFormatTypes;
     KnownPluginList knownPluginList;
     KnownPluginList::SortMethod pluginSortMethod;
 
