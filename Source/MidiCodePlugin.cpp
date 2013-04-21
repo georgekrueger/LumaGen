@@ -59,7 +59,8 @@ void MidiCodePlugin::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMe
 
 	std::vector<Music::Track::Event> events;
 	std::vector<float> offsets;
-	track_->Update(seconds, numSamples / sampleRate_, events, offsets);
+	float elapsed = (numSamples / sampleRate_) * 1000;
+	track_->Update(seconds, elapsed, events, offsets);
 
 	// convert offsets to samples
 	for (int j=0; j<events.size(); j++) {
