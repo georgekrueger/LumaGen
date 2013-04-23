@@ -1407,6 +1407,9 @@
     <ClCompile Include="..\..\Source\Music.cpp">
       <Filter>LumaGen\Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source\MidiCodePluginEditor.cpp">
+      <Filter>LumaGen\Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source\FilterGraph.h">
@@ -2682,6 +2685,9 @@
       <Filter>LumaGen\Source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\JSFuncs.h">
+      <Filter>LumaGen\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\MidiCodePluginEditor.h">
       <Filter>LumaGen\Source</Filter>
     </ClInclude>
   </ItemGroup>

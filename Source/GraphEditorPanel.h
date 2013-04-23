@@ -79,7 +79,7 @@ private:
 
     It also manages the graph itself, and plays it.
 */
-class GraphDocumentComponent  : public Component
+class GraphDocumentComponent  : public Component, public ButtonListener
 {
 public:
     //==============================================================================
@@ -95,6 +95,8 @@ public:
     //==============================================================================
     void resized();
 
+	virtual void buttonClicked (Button* button);
+
 private:
     //==============================================================================
     AudioDeviceManager* deviceManager;
@@ -104,6 +106,8 @@ private:
     GraphEditorPanel* graphPanel;
     Component* keyboardComp;
     Component* statusBar;
+	TextButton* playButton;
+	TextButton* stopButton;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (GraphDocumentComponent);
 };

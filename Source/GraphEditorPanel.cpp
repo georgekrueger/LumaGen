@@ -1020,6 +1020,11 @@ GraphDocumentComponent::GraphDocumentComponent (AudioDeviceManager* deviceManage
 
     keyState.addListener (&graphPlayer.getMidiMessageCollector());
 
+	addAndMakeVisible(playButton = new TextButton("Play"));
+	addAndMakeVisible(stopButton = new TextButton("Stop"));
+	playButton->addListener(this);
+	stopButton->addListener(this);
+
     addAndMakeVisible (keyboardComp = new MidiKeyboardComponent (keyState,
                                                                  MidiKeyboardComponent::horizontalKeyboard));
 
@@ -1029,6 +1034,8 @@ GraphDocumentComponent::GraphDocumentComponent (AudioDeviceManager* deviceManage
     deviceManager->addMidiInputCallback (String::empty, &graphPlayer.getMidiMessageCollector());
 
     graphPanel->updateComponents();
+
+	graphPlayer.setProcessor (nullptr);
 }
 
 GraphDocumentComponent::~GraphDocumentComponent()
@@ -1051,10 +1058,22 @@ void GraphDocumentComponent::resized()
 
     graphPanel->setBounds (0, 0, getWidth(), getHeight() - keysHeight);
     statusBar->setBounds (0, getHeight() - keysHeight - statusHeight, getWidth(), statusHeight);
-    keyboardComp->setBounds (0, getHeight() - keysHeight, getWidth(), keysHeight);
+	playButton->setBounds(0, getHeight() - keysHeight, 50, 30);
+	stopButton->setBounds(0, (getHeight() - keysHeight) + 30, 50, 30);
+    keyboardComp->setBounds (60, getHeight() - keysHeight, getWidth(), keysHeight);
 }
 
 void GraphDocumentComponent::createNewPlugin (const PluginDescription* desc, int x, int y)
 {
     graphPanel->createNewPlugin (desc, x, y);
+}
+
+void GraphDocumentComponent::buttonClicked (Button* button)
+{
+	if (button == playButton) {
+		graphPlayer.setProcessor (&graph.getGraph());
+	}
+	else if (button == stopButton) {
+		graphPlayer.setProcessor (nullptr);
+	}
 }

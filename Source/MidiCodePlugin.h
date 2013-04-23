@@ -20,8 +20,8 @@ public:
 	virtual bool isOutputChannelStereoPair (int index) const { return false; }
 	virtual bool acceptsMidi() const { return false; }
 	virtual bool producesMidi() const { return true; }
-	virtual AudioProcessorEditor* createEditor() { return NULL; }
-	virtual bool hasEditor() const { return false; }
+	virtual AudioProcessorEditor* createEditor();
+	virtual bool hasEditor() const { return true; }
 	virtual int getNumParameters() { return 0; }
 	virtual const String getParameterName (int parameterIndex) { return String(); }
 	virtual float getParameter (int parameterIndex) { return 0.0; }
@@ -35,10 +35,13 @@ public:
 	virtual void getStateInformation (juce::MemoryBlock& destData) {}
 	virtual void setStateInformation (const void* data, int sizeInBytes) {}
 
+	void setCode(const String& s) { code_ = s; std::cout << s << std::endl; }
+
 private:
 	double sampleRate_;
 	int sampleCount_;
 	Music::Track* track_;
+	String code_;
 };
 
 class GFormatPluginFormat   : public AudioPluginFormat

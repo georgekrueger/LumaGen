@@ -1184,6 +1184,7 @@
     <ClCompile Include="..\..\JuceLibraryCode\modules\juce_opengl\juce_opengl.cpp" />
     <ClCompile Include="..\..\JuceLibraryCode\modules\juce_video\juce_video.cpp" />
     <ClCompile Include="..\..\Source\MidiCodePlugin.cpp" />
+    <ClCompile Include="..\..\Source\MidiCodePluginEditor.cpp" />
     <ClCompile Include="..\..\Source\Music.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -1611,6 +1612,7 @@
     <ClInclude Include="..\..\JuceLibraryCode\AppConfig.h" />
     <ClInclude Include="..\..\JuceLibraryCode\JuceHeader.h" />
     <ClInclude Include="..\..\Source\MidiCodePlugin.h" />
+    <ClInclude Include="..\..\Source\MidiCodePluginEditor.h" />
     <ClInclude Include="..\..\Source\Music.h" />
   </ItemGroup>
   <ItemGroup>

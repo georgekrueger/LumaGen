@@ -1,5 +1,6 @@
 #include "JuceHeader.h"
 #include "MidiCodePlugin.h"
+#include "MidiCodePluginEditor.h"
 #include "Music.h"
 #include "JSFuncs.h"
 
@@ -31,12 +32,11 @@ void MidiCodePlugin::prepareToPlay (double sampleRate, int estimatedSamplesPerBl
 	track_ = new Music::Track;
 	v8::HandleScope handle_scope;
 	// execute script
-	const char* str = "C:\\Documents and Settings\\George\\My Documents\\LumaGen\\Source\\input.js";
-    v8::Handle<v8::String> source = ReadFile(str);
-    if (source.IsEmpty()) {
-		printf("Error reading '%s'\n", str);
-    }
-	else {
+	//const char* str = "C:\\Documents and Settings\\George\\My Documents\\LumaGen\\Source\\input.js";
+	if (code_.length() > 0)
+	{
+		const char* str = code_.getCharPointer().getAddress();
+		v8::Handle<v8::String> source = v8::String::New(str, strlen(str));
 		v8::Handle<v8::String> filename = v8::String::New("None");
 		if (!ExecuteString(source, filename, false, true, track_)) {
 			std::cerr << "Failed to parse script" << std::endl;
@@ -84,6 +84,10 @@ void MidiCodePlugin::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMe
 	}
 }
 
+AudioProcessorEditor* MidiCodePlugin::createEditor()
+{
+	return new MidiCodePluginEditor(this);
+}
 
 //==============================================================================
 GFormatPluginFormat::GFormatPluginFormat()
