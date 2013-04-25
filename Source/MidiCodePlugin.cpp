@@ -40,6 +40,8 @@ void MidiCodePlugin::prepareToPlay (double sampleRate, int estimatedSamplesPerBl
 		v8::Handle<v8::String> filename = v8::String::New("None");
 		if (!ExecuteString(source, filename, false, true, track_)) {
 			std::cerr << "Failed to parse script" << std::endl;
+			//DialogWindow w("Parse Error", Colour(0, 0, 0), true);
+			//w.setVisible(true);		
 		}
 	}
 }
@@ -86,7 +88,22 @@ void MidiCodePlugin::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMe
 
 AudioProcessorEditor* MidiCodePlugin::createEditor()
 {
-	return new MidiCodePluginEditor(this);
+	MidiCodePluginEditor* e = new MidiCodePluginEditor(this);
+	e->setCode(code_);
+	return e;
+}
+
+void MidiCodePlugin::getStateInformation (juce::MemoryBlock& destData)
+{
+	const String::CharPointerType& charPtr = code_.getCharPointer();
+	destData.setSize(charPtr.sizeInBytes());
+	destData.copyFrom (charPtr.getAddress(), 0, charPtr.sizeInBytes());
+}
+
+void MidiCodePlugin::setStateInformation (const void* data, int sizeInBytes)
+{
+	String::CharPointerType c(static_cast<const String::CharPointerType::CharType*>(data));
+	code_ = c;
 }
 
 //==============================================================================

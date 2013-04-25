@@ -48,6 +48,7 @@ public:
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
 	virtual void textEditorTextChanged (TextEditor& editor);
+	void setCode(const String& s) { codeEditor->setText(s); }
     //[/UserMethods]
 
     void paint (Graphics& g);

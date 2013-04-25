@@ -32,8 +32,8 @@ public:
 	virtual void setCurrentProgram (int index) {}
 	virtual const String getProgramName (int index) { return String(); }
 	virtual void changeProgramName (int index, const String& newName) {}
-	virtual void getStateInformation (juce::MemoryBlock& destData) {}
-	virtual void setStateInformation (const void* data, int sizeInBytes) {}
+	virtual void getStateInformation (juce::MemoryBlock& destData);
+	virtual void setStateInformation (const void* data, int sizeInBytes);
 
 	void setCode(const String& s) { code_ = s; std::cout << s << std::endl; }
 
