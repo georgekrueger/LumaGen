@@ -41,11 +41,11 @@ Persistent<Context> CreateV8Context()
 
 	// Bind the global 'print' function to the C++ Print callback.
 	global->Set(v8::String::New("print"), v8::FunctionTemplate::New(Print));
-	global->Set(v8::String::New("NoteGen"), v8::FunctionTemplate::New(MakeNote));
-	global->Set(v8::String::New("RestGen"), v8::FunctionTemplate::New(MakeRest));
-	global->Set(v8::String::New("PatternGen"), v8::FunctionTemplate::New(MakePattern));
-	global->Set(v8::String::New("WeightGen"), v8::FunctionTemplate::New(MakeWeightedGen));
-	global->Set(v8::String::New("TransposeGen"), v8::FunctionTemplate::New(MakeTransposeGen));
+	global->Set(v8::String::New("note"), v8::FunctionTemplate::New(MakeNote));
+	global->Set(v8::String::New("rest"), v8::FunctionTemplate::New(MakeRest));
+	global->Set(v8::String::New("pattern"), v8::FunctionTemplate::New(MakePattern));
+	global->Set(v8::String::New("choose"), v8::FunctionTemplate::New(MakeWeightedGen));
+	global->Set(v8::String::New("transpose"), v8::FunctionTemplate::New(MakeTransposeGen));
 	
 	v8::Persistent<v8::Context> context = v8::Context::New(NULL, global);
 
@@ -453,8 +453,8 @@ Handle<ObjectTemplate> MakePatternTemplate() {
 	result->SetInternalFieldCount(1);
 
 	// Add accessors for each of the fields
-	result->Set(v8::String::New("MakeStatic"), v8::FunctionTemplate::New(makeStaticPattern));
-	result->Set(v8::String::New("Play"), v8::FunctionTemplate::New(playPattern));
+	result->Set(v8::String::New("static"), v8::FunctionTemplate::New(makeStaticPattern));
+	result->Set(v8::String::New("play"), v8::FunctionTemplate::New(playPattern));
 
 	// Again, return the result through the current handle scope.
 	return handle_scope.Close(result);

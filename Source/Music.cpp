@@ -313,8 +313,9 @@ Track::Track() : clearRequested_(false), addPartRequested_(false)
 void Track::Add(GeneratorSharedPtr gen, Quantization quantize)
 {
 	Part part = {false, 0, 0, quantize, gen, gen->Generate()};
-	addPartRequested_ = true;
-	addPart_ = part;
+	parts_.push_back(part);
+	//addPartRequested_ = true;
+	//addPart_ = part;
 }
 
 void Track::Remove(GeneratorSharedPtr gen)
@@ -374,10 +375,10 @@ void Track::Update(float songTime, float elapsedTime, vector<Event>& events, vec
 	}
 
 	// check for add request
-	if (addPartRequested_) {
-		parts_.push_back(addPart_);
-		addPartRequested_ = false;
-	}
+	//if (addPartRequested_) {
+	//	parts_.push_back(addPart_);
+	//	addPartRequested_ = false;
+	//}
 
 	for (list<Part>::iterator i = parts_.begin(); i != parts_.end(); )
 	{

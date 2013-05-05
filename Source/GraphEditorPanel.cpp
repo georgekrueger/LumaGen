@@ -1071,6 +1071,7 @@ void GraphDocumentComponent::createNewPlugin (const PluginDescription* desc, int
 void GraphDocumentComponent::buttonClicked (Button* button)
 {
 	if (button == playButton) {
+		graphPlayer.setProcessor (nullptr);
 		graphPlayer.setProcessor (&graph.getGraph());
 	}
 	else if (button == stopButton) {
