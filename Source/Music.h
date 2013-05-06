@@ -40,7 +40,7 @@ float BeatsToMilliseconds(float beats);
 struct Note
 {
 	short pitch;
-	short velocity;
+	float velocity;
 	float length;
 };
 
@@ -173,7 +173,7 @@ public:
 	struct NoteOnEvent
 	{
 		short pitch;
-		short velocity;
+		float velocity;
 	};
 	struct NoteOffEvent
 	{

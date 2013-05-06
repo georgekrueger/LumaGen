@@ -153,8 +153,8 @@ ValueListSharedPtr NoteGenerator::Generate()
 		pitch = *pitchInt;
 	}
 
-	int* velocityPtr = boost::get<int>(velocityResult->at(0).get());
-	int velocity = 127;
+	float* velocityPtr = boost::get<float>(velocityResult->at(0).get());
+	float velocity = 1;
 	if (velocityPtr != NULL) {
 		velocity = *velocityPtr;
 	}
@@ -225,7 +225,7 @@ PatternGenSharedPtr PatternGenerator::MakeStatic()
 				if (NoteSharedPtr* note = boost::get<NoteSharedPtr>(valuePtr.get())) 
 				{
 					GeneratorSharedPtr pitchGen( new SingleValueGenerator<int>((*note)->pitch) );
-					GeneratorSharedPtr velGen( new SingleValueGenerator<int>((*note)->velocity) );
+					GeneratorSharedPtr velGen( new SingleValueGenerator<float>((*note)->velocity) );
 					GeneratorSharedPtr lenGen( new SingleValueGenerator<float>((*note)->length) );
 					NoteGenSharedPtr noteGen( new NoteGenerator(pitchGen, velGen, lenGen) );
 					gens.push_back(noteGen);

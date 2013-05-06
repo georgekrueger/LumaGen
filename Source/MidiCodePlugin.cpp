@@ -79,7 +79,7 @@ void MidiCodePlugin::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMe
 			std::cout << "add note on event";
 		}
 		else if (Music::Track::NoteOnEvent* noteOnEvent = boost::get<Music::Track::NoteOnEvent>(&events[j])) {
-			MidiMessage msg = MidiMessage::noteOn(1, noteOnEvent->pitch, noteOnEvent->velocity / 127.0f);
+			MidiMessage msg = MidiMessage::noteOn(1, noteOnEvent->pitch, noteOnEvent->velocity);
 			midiMessages.addEvent (msg, static_cast<int>(offsets[j]));
 			std::cout << "add note off event";
 		}
