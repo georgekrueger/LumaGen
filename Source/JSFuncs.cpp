@@ -617,7 +617,7 @@ Handle<ObjectTemplate> MakeTransposeGenTemplate() {
 Handle<Value> MakeTransposeGen(const Arguments& args) {
 	HandleScope handle_scope;
 
-	if (args.Length() != 3) {
+	if (args.Length() != 2) {
 		// error
 		cerr << "Incorrect number of arguments to TransposeGen (2 required)" << endl;
 		return Handle<Value>();
@@ -633,23 +633,13 @@ Handle<Value> MakeTransposeGen(const Arguments& args) {
 	Music::GeneratorSharedPtr gen = boost::get<Music::GeneratorSharedPtr>(*musicObj);
 
 	arg = args[1];
-	if (!arg->IsString()) {
-		cerr << "Second argument to TransposeGen must be a scale string!" << endl;
-		return Handle<Value>();
-	}
-
-	v8::String::Utf8Value str(arg);
-	string scaleStr = string(ToCString(str));
-	Music::GeneratorSharedPtr scaleGen(new Music::SingleValueGenerator<string>(scaleStr));
-
-	arg = args[2];
 	if (!arg->IsNumber()){
-		cerr << "Third argument to TransposeGen must be an integer!" << endl;
+		cerr << "Second argument to TransposeGen must be a number!" << endl;
 		return Handle<Value>();
 	}
-	int transposeAmount = arg->Int32Value();
+	double transposeAmount = arg->NumberValue();
 
-	boost::shared_ptr<Music::TransposeGenerator> transposeGen( new Music::TransposeGenerator(gen, scaleGen, transposeAmount) );
+	boost::shared_ptr<Music::TransposeGenerator> transposeGen( new Music::TransposeGenerator(gen, transposeAmount) );
 
 	// Fetch the template for creating JavaScript http request wrappers.
 	// It only has to be created once, which we do on demand.

@@ -74,32 +74,6 @@ double BeatsToMilliseconds(double beats)
 	return (BEAT_LENGTH * beats);
 }
 
-void ParsePitchString(const std::string& str, Scale& scale, short& root)
-{
-	scale = NO_SCALE;
-	root = 60;
-
-	size_t firstSplit = str.find('_', 0);
-	if (firstSplit == string::npos)
-		return;
-	string rootStr = str.substr(0, firstSplit);
-	string scaleStr = str.substr(firstSplit+1);
-	//cout << scaleStr << endl;
-
-	root = GetPitchNumberFromName(rootStr);
-
-	for (int i=0; i<NumScales; i++) {
-		if (scaleStr.compare(ScaleStrings[i]) == 0) {
-			scale = (Scale)i;
-			break;
-		}
-	}
-	if (scale == NO_SCALE) {
-		cout << "Invalid scale: " << scaleStr << endl;
-		scale = MAJ;
-	}
-}
-
 void ParseScaleString(const std::string& str, Scale& scale, short& root)
 {
 	scale = NO_SCALE;
@@ -132,7 +106,7 @@ ValueListSharedPtr NoteGenerator::Generate()
 
 	Scale scale;
 	short root;
-	ParsePitchString(globalScale, scale, root);
+	ParseScaleString(globalScale, scale, root);
 
 	short pitch;
 	if (double* pitchRep = boost::get<double>(pitchResult->at(0).get())) {
@@ -264,29 +238,28 @@ ValueListSharedPtr WeightedGenerator::Generate()
 
 ValueListSharedPtr TransposeGenerator::Generate()
 {
-	// figure out transpose amount based on scale and input number
-	ValueListSharedPtr pitchResult = scaleGen_->Generate();
-	std::string* pitchStr = boost::get<std::string>(pitchResult->at(0).get());
-	if (!pitchStr) {
-		cerr << "Failed to parse scale string for TransposeGen" << endl;
-		return ValueListSharedPtr();
-	}
+	// figure out transpose amount based on global scale and input number
 	Scale scale;
 	short root;
-	ParseScaleString(*pitchStr, scale, root);
+	ParseScaleString(globalScale, scale, root);
+
 	const ScaleInfo* info = &scaleInfo[scale];
-	int octave = transposeAmount_ / info->numIntervals;
-	int correctedTransposeAmount = transposeAmount_;
-	if (transposeAmount_ < 0) {
-		correctedTransposeAmount = info->numIntervals - abs(transposeAmount_) % info->numIntervals;
-	}
-	int degree = info->intervals[correctedTransposeAmount % info->numIntervals];
+	
+	short octave = (short)transposeAmount_;
+	short degree = (transposeAmount_ - (short)transposeAmount_) * 100;
+	//short correctedDegree = degree;
+	//if (degree < 0) {
+	//	correctedDegree = info->numIntervals - abs(degree) % info->numIntervals;
+	//}
+	//int offset = info->intervals[correctedDegree % info->numIntervals];
 	int finalTranspose = 12 * octave;
 	if (transposeAmount_ >= 0) {
-		finalTranspose += degree;
+		finalTranspose += info->intervals[degree % info->numIntervals];
 	}
 	else {
-		finalTranspose -= degree;
+		if (degree < 0) {
+			finalTranspose -= (12 - info->intervals[ info->numIntervals - abs(degree) ]);
+		}
 	}
 
 	boost::shared_ptr<ValueList> events = gen_->Generate();
