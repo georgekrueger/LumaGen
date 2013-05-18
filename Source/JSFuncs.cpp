@@ -29,6 +29,7 @@ v8::Handle<v8::Value> MakeWeightedGen(const v8::Arguments& args);
 Handle<ObjectTemplate> MakeWeightedGenTemplate();
 v8::Handle<v8::Value> MakeTransposeGen(const v8::Arguments& args);
 Handle<ObjectTemplate> MakeTransposeGenTemplate();
+v8::Handle<v8::Value> MakeScaleGen(const v8::Arguments& args);
 //Handle<Value> GetPitch(Local<String> name, const AccessorInfo& info);
 
 typedef boost::variant<boost::shared_ptr<Music::Generator>, boost::shared_ptr<SongTrack> > MusicObject;
@@ -43,9 +44,10 @@ Persistent<Context> CreateV8Context()
 	global->Set(v8::String::New("print"), v8::FunctionTemplate::New(Print));
 	global->Set(v8::String::New("note"), v8::FunctionTemplate::New(MakeNote));
 	global->Set(v8::String::New("rest"), v8::FunctionTemplate::New(MakeRest));
-	global->Set(v8::String::New("pattern"), v8::FunctionTemplate::New(MakePattern));
-	global->Set(v8::String::New("choose"), v8::FunctionTemplate::New(MakeWeightedGen));
-	global->Set(v8::String::New("transpose"), v8::FunctionTemplate::New(MakeTransposeGen));
+	global->Set(v8::String::New("pat"), v8::FunctionTemplate::New(MakePattern));
+	global->Set(v8::String::New("pick"), v8::FunctionTemplate::New(MakeWeightedGen));
+	global->Set(v8::String::New("trans"), v8::FunctionTemplate::New(MakeTransposeGen));
+	global->Set(v8::String::New("scale"), v8::FunctionTemplate::New(MakeScaleGen));
 	
 	v8::Persistent<v8::Context> context = v8::Context::New(NULL, global);
 
@@ -198,15 +200,15 @@ Music::GeneratorSharedPtr GetGeneratorFromJSValue(Handle<Value> value, bool inte
 	else if (value->IsUint32() || value->IsInt32()) {
 		int val = value->Int32Value();
 		if (interpretIntAsFloat) {
-			gen.reset(new Music::SingleValueGenerator<float>(val));
+			gen.reset(new Music::SingleValueGenerator<double>(val));
 		}
 		else {
 			gen.reset(new Music::SingleValueGenerator<int>(val));
 		}
 	}
 	else if (value->IsNumber()) {
-		float val = static_cast<float>(value->NumberValue());
-		gen.reset(new Music::SingleValueGenerator<float>(val));
+		double val = value->NumberValue();
+		gen.reset(new Music::SingleValueGenerator<double>(val));
 	}
 	else if (value->IsObject()) {
 		MusicObject* obj = ExtractObjectFromJSWrapper<MusicObject>(value->ToObject());
@@ -231,10 +233,9 @@ Handle<Value> MakeNote(const Arguments& args) {
 	Local<Value> arg;
 
 	arg = args[0];
-	if (arg->IsString()) {
-		v8::String::Utf8Value str(arg);
-		string pitchStr = string(ToCString(str));
-		pitchGen.reset(new Music::SingleValueGenerator<string>(pitchStr));
+	if (arg->IsNumber()) {
+		double value = arg->NumberValue();
+		pitchGen.reset(new Music::SingleValueGenerator<double>(value));
 	}
 	else if (arg->IsObject()) {
 		MusicObject* obj = ExtractObjectFromJSWrapper<MusicObject>(arg->ToObject());
@@ -259,8 +260,8 @@ Handle<Value> MakeNote(const Arguments& args) {
 
 	arg = args[2];
 	if (arg->IsNumber()) {
-		float value = (float)arg->NumberValue();
-		lenGen.reset(new Music::SingleValueGenerator<float>(value));
+		double value = arg->NumberValue();
+		lenGen.reset(new Music::SingleValueGenerator<double>(value));
 	}
 	else if (arg->IsObject()) {
 		MusicObject* obj = ExtractObjectFromJSWrapper<MusicObject>(arg->ToObject());
@@ -342,8 +343,8 @@ Handle<Value> MakeRest(const Arguments& args)
 
 	Local<Value> arg = args[0];
 	if (arg->IsNumber()) {
-		float value = (float)arg->NumberValue();
-		lenGen.reset(new Music::SingleValueGenerator<float>(value));
+		double value = arg->NumberValue();
+		lenGen.reset(new Music::SingleValueGenerator<double>(value));
 	}
 	else if (arg->IsObject()) {
 		MusicObject* obj = ExtractObjectFromJSWrapper<MusicObject>(arg->ToObject());
@@ -565,7 +566,7 @@ Handle<Value> MakeWeightedGen(const Arguments& args) {
 				Music::GeneratorSharedPtr genPtr = GetGeneratorFromJSValue(genValue, true);
 				Local<Value> weightValue = arr->Get(1);
 				if (weightValue->IsNumber()) {
-					float weight = static_cast<float>(weightValue->NumberValue());
+					double weight = weightValue->NumberValue();
 					int scaledWeight = weight * WEIGHT_SCALE;
 					gens.push_back( make_pair(genPtr, scaledWeight) );
 				}
@@ -675,4 +676,25 @@ Handle<Value> MakeTransposeGen(const Arguments& args) {
 	return handle_scope.Close(result);
 }
 
+Handle<Value> MakeScaleGen(const Arguments& args) {
+	HandleScope handle_scope;
+
+	if (args.Length() != 1) {
+		cerr << "Incorrect number of arguments to ScaleGen" << endl;
+		return Handle<Value>();
+	}
+
+	Local<Value> arg = args[0];
+	if (!arg->IsString()) {
+		cerr << "Argument to ScaleGen must be a scale string (i.e. 'C_MAJ')!" << endl;
+		return Handle<Value>();
+	}
+
+	v8::String::Utf8Value str(arg);
+	string scaleStr = string(ToCString(str));
+	// TODO: check if scale is valid
+	Music::setGlobalScale(scaleStr);
+
+	return v8::Undefined();
+}
 

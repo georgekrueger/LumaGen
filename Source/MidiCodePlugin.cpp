@@ -60,26 +60,26 @@ void MidiCodePlugin::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMe
 	double seconds = sampleCount_ / sampleRate_;
 
 	std::vector<Music::Track::Event> events;
-	std::vector<float> offsets;
-	float elapsed = (numSamples / sampleRate_) * 1000;
+	std::vector<double> offsets;
+	double elapsed = (numSamples / sampleRate_) * 1000.0;
 	track_->Update(seconds, elapsed, events, offsets);
 
 	// convert offsets to samples
 	for (int j=0; j<events.size(); j++) {
 		// first convert offset to samples
 		int offsetInSamples = static_cast<int>(offsets[j] / 1000 * sampleRate_);
-		offsets[j] = static_cast<float>(offsetInSamples);
+		offsets[j] = static_cast<double>(offsetInSamples);
 	}
 
 	// send events to plugin
 	for (int j=0; j<events.size(); j++) {
 		if (Music::Track::NoteOffEvent* noteOffEvent = boost::get<Music::Track::NoteOffEvent>(&events[j])) {
-			MidiMessage msg = MidiMessage::noteOff(1, noteOffEvent->pitch, 0);
+			MidiMessage msg = MidiMessage::noteOff(1, noteOffEvent->pitch, 0.0);
 			midiMessages.addEvent (msg, static_cast<int>(offsets[j]));
 			std::cout << "add note on event";
 		}
 		else if (Music::Track::NoteOnEvent* noteOnEvent = boost::get<Music::Track::NoteOnEvent>(&events[j])) {
-			MidiMessage msg = MidiMessage::noteOn(1, noteOnEvent->pitch, noteOnEvent->velocity);
+			MidiMessage msg = MidiMessage::noteOn(1, noteOnEvent->pitch, static_cast<float>(noteOnEvent->velocity));
 			midiMessages.addEvent (msg, static_cast<int>(offsets[j]));
 			std::cout << "add note off event";
 		}

@@ -8,8 +8,14 @@ using namespace boost;
 namespace Music
 {
 
-float BPM = 120;
-float BEAT_LENGTH = 1 / BPM * 60000;
+double BPM = 120;
+double BEAT_LENGTH = 1 / BPM * 60000;
+string globalScale = "C_MAJ";
+
+void setGlobalScale(string scaleStr)
+{
+	globalScale = scaleStr;
+}
 
 static bool randSeeded = false;
 
@@ -63,32 +69,22 @@ unsigned short GetMidiPitch(Scale scale, int root, int octave, int degree)
 	return midiPitch;
 }
 
-float BeatsToMilliseconds(float beats)
+double BeatsToMilliseconds(double beats)
 {
 	return (BEAT_LENGTH * beats);
 }
 
-void ParsePitchString(const std::string& str, Scale& scale, short& root, short& octave, short& degree)
+void ParsePitchString(const std::string& str, Scale& scale, short& root)
 {
 	scale = NO_SCALE;
 	root = 60;
-	octave = 1;
-	degree = 1;
 
 	size_t firstSplit = str.find('_', 0);
 	if (firstSplit == string::npos)
 		return;
-	size_t secondSplit = str.find('_', firstSplit + 1);
-	if (secondSplit == string::npos)
-		return;
-	size_t thirdSplit = str.find('_', secondSplit + 1);
-	if (thirdSplit == string::npos)
-		return;
 	string rootStr = str.substr(0, firstSplit);
-	string scaleStr = str.substr(firstSplit+1, secondSplit-firstSplit-1);
-	string octaveStr = str.substr(secondSplit+1, 1);
-	string degreeStr = str.substr(thirdSplit+1, 1);
-	//cout << scaleStr << " " << octaveStr << " " << degreeStr << endl;
+	string scaleStr = str.substr(firstSplit+1);
+	//cout << scaleStr << endl;
 
 	root = GetPitchNumberFromName(rootStr);
 
@@ -102,10 +98,6 @@ void ParsePitchString(const std::string& str, Scale& scale, short& root, short& 
 		cout << "Invalid scale: " << scaleStr << endl;
 		scale = MAJ;
 	}
-	stringstream octaveStream(octaveStr);
-	octaveStream >> octave;
-	stringstream degreeStream(degreeStr);
-	degreeStream >> degree;
 }
 
 void ParseScaleString(const std::string& str, Scale& scale, short& root)
@@ -138,14 +130,15 @@ ValueListSharedPtr NoteGenerator::Generate()
 	ValueListSharedPtr velocityResult = velocityGen_->Generate();
 	ValueListSharedPtr lengthResult = lengthGen_->Generate();
 
+	Scale scale;
+	short root;
+	ParsePitchString(globalScale, scale, root);
+
 	short pitch;
-	if (std::string* pitchStr = boost::get<std::string>(pitchResult->at(0).get())) {
+	if (double* pitchRep = boost::get<double>(pitchResult->at(0).get())) {
 		// parse pitch as string
-		Scale scale;
-		short root;
-		short octave;
-		short degree;
-		ParsePitchString(*pitchStr, scale, root, octave, degree);
+		short octave = (short)*pitchRep;
+		short degree = (*pitchRep - (short)*pitchRep) * 100;
 		pitch = GetMidiPitch(scale, root, octave, degree);
 	}
 	else if (int* pitchInt = boost::get<int>(pitchResult->at(0).get())) {
@@ -153,14 +146,14 @@ ValueListSharedPtr NoteGenerator::Generate()
 		pitch = *pitchInt;
 	}
 
-	float* velocityPtr = boost::get<float>(velocityResult->at(0).get());
-	float velocity = 1;
+	double* velocityPtr = boost::get<double>(velocityResult->at(0).get());
+	double velocity = 1.0;
 	if (velocityPtr != NULL) {
 		velocity = *velocityPtr;
 	}
 
-	float* lengthPtr = boost::get<float>(lengthResult->at(0).get());
-	float length = 1.0;
+	double* lengthPtr = boost::get<double>(lengthResult->at(0).get());
+	double length = 1.0;
 	if (lengthPtr != NULL) {
 		length = *lengthPtr;
 	}
@@ -181,8 +174,8 @@ ValueListSharedPtr RestGenerator::Generate()
 {
 	ValueListSharedPtr lengthResult = lengthGen_->Generate();
 
-	float* lengthPtr = boost::get<float>(lengthResult->at(0).get());
-	float length = 1.0;
+	double* lengthPtr = boost::get<double>(lengthResult->at(0).get());
+	double length = 1.0;
 	if (lengthPtr != NULL) {
 		length = *lengthPtr;
 	}
@@ -225,13 +218,13 @@ PatternGenSharedPtr PatternGenerator::MakeStatic()
 				if (NoteSharedPtr* note = boost::get<NoteSharedPtr>(valuePtr.get())) 
 				{
 					GeneratorSharedPtr pitchGen( new SingleValueGenerator<int>((*note)->pitch) );
-					GeneratorSharedPtr velGen( new SingleValueGenerator<float>((*note)->velocity) );
-					GeneratorSharedPtr lenGen( new SingleValueGenerator<float>((*note)->length) );
+					GeneratorSharedPtr velGen( new SingleValueGenerator<double>((*note)->velocity) );
+					GeneratorSharedPtr lenGen( new SingleValueGenerator<double>((*note)->length) );
 					NoteGenSharedPtr noteGen( new NoteGenerator(pitchGen, velGen, lenGen) );
 					gens.push_back(noteGen);
 				}
 				else if (RestSharedPtr* rest = boost::get<RestSharedPtr>(valuePtr.get())) {
-					GeneratorSharedPtr lenGen( new SingleValueGenerator<float>((*rest)->length) );
+					GeneratorSharedPtr lenGen( new SingleValueGenerator<double>((*rest)->length) );
 					RestGenSharedPtr restGen( new RestGenerator(lenGen) );
 					gens.push_back(restGen);
 				}
@@ -328,7 +321,7 @@ void Track::Clear()
 	clearRequested_ = true;
 }
 
-void Track::Update(float songTime, float elapsedTime, vector<Event>& events, vector<float>& offsets)
+void Track::Update(double songTime, double elapsedTime, vector<Event>& events, vector<double>& offsets)
 {
 	// update active notes
 	map<short, ActiveNote>::iterator it;
@@ -384,17 +377,17 @@ void Track::Update(float songTime, float elapsedTime, vector<Event>& events, vec
 	{
 		Part& part = *i;
 
-		float timeUsed = 0;
+		double timeUsed = 0;
 		while (timeUsed < elapsedTime)
 		{
-			float timeUsedThisIteration = 0;
+			double timeUsedThisIteration = 0;
 
 			// if there is left over time from a previously encountered rest, then consume it.
 			if (part.waitTime > 0) 
 			{
 				if (timeUsed + part.waitTime > elapsedTime) {
 					// wait time is bigger than time left in window. use up as much wait time as we can.
-					float timeLeftInFrame = elapsedTime - timeUsed;
+					double timeLeftInFrame = elapsedTime - timeUsed;
 					part.waitTime -= timeLeftInFrame;
 					timeUsed = elapsedTime;
 					timeUsedThisIteration = timeLeftInFrame;

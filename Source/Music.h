@@ -14,6 +14,8 @@
 namespace Music
 {
 
+void setGlobalScale(std::string scaleStr);
+
 ///////////////////////////
 // Scales
 ///////////////////////////
@@ -35,24 +37,24 @@ enum Quantization
 
 unsigned short GetMidiPitch(Scale scale, int octave, int degree);
 const char* GetScaleName(Scale scale);
-float BeatsToMilliseconds(float beats);
+double BeatsToMilliseconds(double beats);
 
 struct Note
 {
 	short pitch;
-	float velocity;
-	float length;
+	double velocity;
+	double length;
 };
 
 struct Rest
 {
-	float length;
+	double length;
 };
 
 typedef boost::shared_ptr<Note> NoteSharedPtr;
 typedef boost::shared_ptr<Rest> RestSharedPtr;
 
-typedef boost::variant<std::string, int, float, NoteSharedPtr, RestSharedPtr> Value;
+typedef boost::variant<std::string, int, double, NoteSharedPtr, RestSharedPtr> Value;
 typedef boost::shared_ptr<Value> ValueSharedPtr;
 
 class Generator;
@@ -173,7 +175,7 @@ public:
 	struct NoteOnEvent
 	{
 		short pitch;
-		float velocity;
+		double velocity;
 	};
 	struct NoteOffEvent
 	{
@@ -185,14 +187,14 @@ public:
 	void Remove(GeneratorSharedPtr gen);
 	void Clear();
 
-	void Update(float songTime, float elapsedTime, std::vector<Event>& events, std::vector<float>& offsets);
+	void Update(double songTime, double elapsedTime, std::vector<Event>& events, std::vector<double>& offsets);
 
 private:
 
 	struct Part
 	{
 		bool started;
-		float waitTime;
+		double waitTime;
 		unsigned long currentEvent;
 		Quantization quantize;
 		GeneratorSharedPtr gen;
@@ -202,7 +204,7 @@ private:
 	struct ActiveNote
 	{
 		short pitch;
-		float timeLeft;
+		double timeLeft;
 	};
 	std::list<Part> parts_;
 	std::map<short, ActiveNote> activeNotes_;
