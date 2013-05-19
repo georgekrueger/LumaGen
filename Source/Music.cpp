@@ -62,6 +62,17 @@ unsigned short GetPitchNumberFromName(string PitchName)
 unsigned short GetMidiPitch(Scale scale, int octave, int degree)
 {
 	const ScaleInfo* info = &scaleInfo[scale.type];
+	if (degree > info->numIntervals) {
+		degree -= 1;
+		degree = degree % info->numIntervals;
+		degree += 1;
+	}
+	while (degree < 1) {
+		if (octave == 0) break;
+		octave -= 1;
+		degree += info->numIntervals;
+	}
+
 	short midiPitch = 12 * octave + scale.root;
 	if (degree >= 1 && degree <= info->numIntervals) {
 		midiPitch += info->intervals[degree-1];
@@ -69,11 +80,40 @@ unsigned short GetMidiPitch(Scale scale, int octave, int degree)
 	return midiPitch;
 }
 
-// Take a midi pitch note number and transpose by octave and degree, 
-// according to the given scale
-short TransposePitch( short pitch, Scale scale, short octave, short degree )
+bool GetScalePitchFromMidiPitch(short pitch, Scale scale, short& octave, short& degree)
 {
-	return 0;
+	const ScaleInfo* info = &scaleInfo[scale.type];
+	octave = pitch / 12;
+	degree = 0;
+	bool found = false;
+	for (int i=octave; i <= 12; i++)
+	{
+		for (int j=0; j<=info->numIntervals; j++)
+		{
+			short p = i * 12 + info->intervals[j];
+			if (p == pitch) {
+				degree = j;
+				found = true;
+				break;
+			}
+		}
+		if (found) break;
+	}
+	return found;
+}
+
+// Take a midi pitch note number and transpose by octave and degree, 
+// according to the given scale and return a midi pitch
+short TransposePitch( short pitch, Scale scale, short transOctave, short transDegree )
+{
+	short octave, degree;
+	bool foundPitch = GetScalePitchFromMidiPitch(pitch, scale, octave, degree);
+	if (foundPitch) {
+		octave += transOctave;
+		degree += transDegree;
+		return GetMidiPitch(scale, octave, degree);
+	}
+	return pitch;
 }
 
 double BeatsToMilliseconds(double beats)
@@ -251,29 +291,14 @@ ValueListSharedPtr TransposeGenerator::Generate()
 
 	const ScaleInfo* info = &scaleInfo[scale.type];
 	
-	short octave = (short)transposeAmount_;
-	short degree = (transposeAmount_ - (short)transposeAmount_) * 100;
-	//short correctedDegree = degree;
-	//if (degree < 0) {
-	//	correctedDegree = info->numIntervals - abs(degree) % info->numIntervals;
-	//}
-	//int offset = info->intervals[correctedDegree % info->numIntervals];
-	int finalTranspose = 12 * octave;
-	if (transposeAmount_ >= 0) {
-		finalTranspose += info->intervals[degree % info->numIntervals];
-	}
-	else {
-		if (degree < 0) {
-			finalTranspose -= (12 - info->intervals[ info->numIntervals - abs(degree) ]);
-		}
-	}
+	short transOctave = (short)transposeAmount_;
+	short transDegree = (transposeAmount_ - (short)transposeAmount_) * 100;
 
 	boost::shared_ptr<ValueList> events = gen_->Generate();
 	for (int i=0; i<events->size(); i++) {
 		boost::shared_ptr<Value> value = events->at(i);
 		if (Music::NoteSharedPtr* note = boost::get<NoteSharedPtr>(value.get())) {
-			//(*note)->pitch += finalTranspose;
-			(*note)->pitch = TransposePitch( (*note)->pitch, scale, octave, degree );
+			(*note)->pitch = TransposePitch( (*note)->pitch, scale, transOctave, transDegree );
 		}
 	}
 	return events;
