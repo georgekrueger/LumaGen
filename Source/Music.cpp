@@ -92,7 +92,7 @@ bool GetScalePitchFromMidiPitch(short pitch, Scale scale, short& octave, short& 
 		{
 			short p = i * 12 + info->intervals[j];
 			if (p == pitch) {
-				degree = j;
+				degree = j + 1;
 				found = true;
 				break;
 			}
@@ -157,8 +157,9 @@ ValueListSharedPtr NoteGenerator::Generate()
 	short pitch;
 	if (double* pitchRep = boost::get<double>(pitchResult->at(0).get())) {
 		// parse pitch as string
-		short octave = (short)*pitchRep;
-		short degree = (*pitchRep - (short)*pitchRep) * 100;
+		double p = *pitchRep;
+		short octave = (short)p;
+		short degree = (short)((p - (short)p) * 100 + 0.5); // round to nearest hundredth
 		pitch = GetMidiPitch(scale, octave, degree);
 	}
 	else if (int* pitchInt = boost::get<int>(pitchResult->at(0).get())) {
@@ -292,7 +293,7 @@ ValueListSharedPtr TransposeGenerator::Generate()
 	const ScaleInfo* info = &scaleInfo[scale.type];
 	
 	short transOctave = (short)transposeAmount_;
-	short transDegree = (transposeAmount_ - (short)transposeAmount_) * 100;
+	short transDegree = (short)((transposeAmount_ - (short)transposeAmount_) * 100 + 0.5); // round to nearest hundredth
 
 	boost::shared_ptr<ValueList> events = gen_->Generate();
 	for (int i=0; i<events->size(); i++) {
