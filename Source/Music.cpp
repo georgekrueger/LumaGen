@@ -44,7 +44,7 @@ const ScaleInfo scaleInfo[NumScales] =
 	{ { 0, 3, 5, 7, 10 }, 5 },
 };
 
-const char* GetScaleName(Scale scale)
+const char* GetScaleName(ScaleType scale)
 {
 	return ScaleStrings[scale].c_str();
 }
@@ -59,14 +59,21 @@ unsigned short GetPitchNumberFromName(string PitchName)
 	return 0;
 }
 
-unsigned short GetMidiPitch(Scale scale, int root, int octave, int degree)
+unsigned short GetMidiPitch(Scale scale, int octave, int degree)
 {
-	const ScaleInfo* info = &scaleInfo[scale];
-	short midiPitch = 12 * octave + root;
+	const ScaleInfo* info = &scaleInfo[scale.type];
+	short midiPitch = 12 * octave + scale.root;
 	if (degree >= 1 && degree <= info->numIntervals) {
 		midiPitch += info->intervals[degree-1];
 	}
 	return midiPitch;
+}
+
+// Take a midi pitch note number and transpose by octave and degree, 
+// according to the given scale
+short TransposePitch( short pitch, Scale scale, short octave, short degree )
+{
+	return 0;
 }
 
 double BeatsToMilliseconds(double beats)
@@ -74,27 +81,27 @@ double BeatsToMilliseconds(double beats)
 	return (BEAT_LENGTH * beats);
 }
 
-void ParseScaleString(const std::string& str, Scale& scale, short& root)
+void ParseScaleString(const std::string& str, Scale& scale)
 {
-	scale = NO_SCALE;
-	root = 60;
+	scale.type = NO_SCALE;
+	scale.root = 60;
 
 	size_t firstSplit = str.find('_', 0);
 	if (firstSplit == string::npos)
 		return;
 	string rootStr = str.substr(0, firstSplit);
 	string scaleStr = str.substr(firstSplit+1);
-	root = GetPitchNumberFromName(rootStr);
+	scale.root = GetPitchNumberFromName(rootStr);
 
 	for (int i=0; i<NumScales; i++) {
 		if (scaleStr.compare(ScaleStrings[i]) == 0) {
-			scale = (Scale)i;
+			scale.type = (ScaleType)i;
 			break;
 		}
 	}
-	if (scale == NO_SCALE) {
+	if (scale.type == NO_SCALE) {
 		cout << "Invalid scale: " << scaleStr << endl;
-		scale = MAJ;
+		scale.type = MAJ;
 	}
 }
 
@@ -105,15 +112,14 @@ ValueListSharedPtr NoteGenerator::Generate()
 	ValueListSharedPtr lengthResult = lengthGen_->Generate();
 
 	Scale scale;
-	short root;
-	ParseScaleString(globalScale, scale, root);
+	ParseScaleString(globalScale, scale);
 
 	short pitch;
 	if (double* pitchRep = boost::get<double>(pitchResult->at(0).get())) {
 		// parse pitch as string
 		short octave = (short)*pitchRep;
 		short degree = (*pitchRep - (short)*pitchRep) * 100;
-		pitch = GetMidiPitch(scale, root, octave, degree);
+		pitch = GetMidiPitch(scale, octave, degree);
 	}
 	else if (int* pitchInt = boost::get<int>(pitchResult->at(0).get())) {
 		// parse pitch as int
@@ -241,9 +247,9 @@ ValueListSharedPtr TransposeGenerator::Generate()
 	// figure out transpose amount based on global scale and input number
 	Scale scale;
 	short root;
-	ParseScaleString(globalScale, scale, root);
+	ParseScaleString(globalScale, scale);
 
-	const ScaleInfo* info = &scaleInfo[scale];
+	const ScaleInfo* info = &scaleInfo[scale.type];
 	
 	short octave = (short)transposeAmount_;
 	short degree = (transposeAmount_ - (short)transposeAmount_) * 100;
@@ -266,7 +272,8 @@ ValueListSharedPtr TransposeGenerator::Generate()
 	for (int i=0; i<events->size(); i++) {
 		boost::shared_ptr<Value> value = events->at(i);
 		if (Music::NoteSharedPtr* note = boost::get<NoteSharedPtr>(value.get())) {
-			(*note)->pitch += finalTranspose;
+			//(*note)->pitch += finalTranspose;
+			(*note)->pitch = TransposePitch( (*note)->pitch, scale, octave, degree );
 		}
 	}
 	return events;

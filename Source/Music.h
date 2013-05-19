@@ -19,7 +19,7 @@ void setGlobalScale(std::string scaleStr);
 ///////////////////////////
 // Scales
 ///////////////////////////
-enum Scale
+enum ScaleType
 {
 	MAJ,
 	MIN,
@@ -28,6 +28,12 @@ enum Scale
 };
 const int NumScales = NO_SCALE;
 
+struct Scale
+{
+	ScaleType type;
+	short root;
+};
+
 enum Quantization
 {
 	NONE,
@@ -35,8 +41,9 @@ enum Quantization
 	BAR
 };
 
-unsigned short GetMidiPitch(Scale scale, int octave, int degree);
-const char* GetScaleName(Scale scale);
+unsigned short GetMidiPitch(ScaleType scale, int octave, int degree);
+short TransposePitch( short pitch, Scale scale, short octave, short degree );
+const char* GetScaleName(ScaleType scale);
 double BeatsToMilliseconds(double beats);
 
 struct Note
