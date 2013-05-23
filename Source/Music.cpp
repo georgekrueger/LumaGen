@@ -293,7 +293,11 @@ ValueListSharedPtr TransposeGenerator::Generate()
 	const ScaleInfo* info = &scaleInfo[scale.type];
 	
 	short transOctave = (short)transposeAmount_;
-	short transDegree = (short)((transposeAmount_ - (short)transposeAmount_) * 100 + 0.5); // round to nearest hundredth
+	bool isNegative = (transposeAmount_ < 0);
+	short transDegree = (short)(fabs(transposeAmount_ - (short)transposeAmount_) * 100 + 0.5); // round to nearest hundredth
+	if (isNegative) {
+		transDegree *= -1;
+	}
 
 	boost::shared_ptr<ValueList> events = gen_->Generate();
 	for (int i=0; i<events->size(); i++) {
