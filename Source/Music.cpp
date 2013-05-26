@@ -62,15 +62,14 @@ unsigned short GetPitchNumberFromName(string PitchName)
 unsigned short GetMidiPitch(Scale scale, int octave, int degree)
 {
 	const ScaleInfo* info = &scaleInfo[scale.type];
-	if (degree > info->numIntervals) {
-		degree -= 1;
-		degree = degree % info->numIntervals;
-		degree += 1;
-	}
 	while (degree < 1) {
 		if (octave == 0) break;
 		octave -= 1;
 		degree += info->numIntervals;
+	}
+	while (degree > info->numIntervals) {
+		octave += 1;
+		degree -= info->numIntervals;
 	}
 
 	short midiPitch = 12 * octave + scale.root;
@@ -83,14 +82,14 @@ unsigned short GetMidiPitch(Scale scale, int octave, int degree)
 bool GetScalePitchFromMidiPitch(short pitch, Scale scale, short& octave, short& degree)
 {
 	const ScaleInfo* info = &scaleInfo[scale.type];
-	octave = pitch / 12;
+	octave = (pitch - scale.root) / 12;
 	degree = 0;
 	bool found = false;
 	for (int i=octave; i <= 12; i++)
 	{
 		for (int j=0; j<=info->numIntervals; j++)
 		{
-			short p = i * 12 + info->intervals[j];
+			short p = i * 12 + scale.root + info->intervals[j];
 			if (p == pitch) {
 				degree = j + 1;
 				found = true;
@@ -313,6 +312,25 @@ ValueListSharedPtr TransposeGenerator::Generate()
 		}
 	}
 	return events;
+}
+
+ValueListSharedPtr SequenceGenerator::Generate()
+{
+	ValueListSharedPtr stepSizeGenResult = stepSizeGen_->Generate();
+	double* stepAmount = boost::get<double>(stepSizeGenResult->at(0).get());
+	if (!stepAmount) {
+		return ValueListSharedPtr();
+	}
+
+	double value = startValue_ + (index_ * (*stepAmount));
+	index_++;
+	if (index_ >= numIterations_) {
+		index_ = 0;
+	}
+
+	boost::shared_ptr<ValueList> result(new ValueList);
+	result->push_back(ValueSharedPtr(new Value(value)));
+	return result;
 }
 
 Track::Track() : clearRequested_(false), addPartRequested_(false)

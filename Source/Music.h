@@ -162,8 +162,6 @@ typedef boost::shared_ptr<WeightedGenerator> WeightedGenPtr;
 class TransposeGenerator : public Generator
 {
 public:
-	typedef std::pair<GeneratorSharedPtr, unsigned long> WeightedValue;
-
 	TransposeGenerator(GeneratorSharedPtr gen, GeneratorSharedPtr transGen) : gen_(gen), transGen_(transGen) {}
 	virtual ValueListSharedPtr Generate();
 
@@ -171,7 +169,22 @@ private:
 	GeneratorSharedPtr gen_;
 	GeneratorSharedPtr transGen_;
 };
-typedef boost::shared_ptr<WeightedGenerator> WeightedGenPtr;
+typedef boost::shared_ptr<TransposeGenerator> TransposeGenPtr;
+
+class SequenceGenerator : public Generator
+{
+public:
+	SequenceGenerator(double startValue, GeneratorSharedPtr stepSizeGen, int numIterations) 
+		: startValue_(startValue), stepSizeGen_(stepSizeGen), numIterations_(numIterations), index_(0) {}
+	virtual ValueListSharedPtr Generate();
+
+private:
+	double startValue_;
+	GeneratorSharedPtr stepSizeGen_;
+	int numIterations_;
+	int index_;
+};
+typedef boost::shared_ptr<TransposeGenerator> TransposeGenPtr;
 
 class Track
 {

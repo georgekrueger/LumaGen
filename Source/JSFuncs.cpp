@@ -17,6 +17,7 @@ static Persistent<ObjectTemplate> gNoteTemplate;
 static Persistent<ObjectTemplate> gRestTemplate;
 static Persistent<ObjectTemplate> gPatternTemplate;
 static Persistent<ObjectTemplate> gWeightedGenTemplate;
+static Persistent<ObjectTemplate> gSeqGenTemplate;
 static Persistent<ObjectTemplate> gTransposeGenTemplate;
 static Persistent<ObjectTemplate> gTrackTemplate;
 v8::Handle<v8::Value> MakeNote(const v8::Arguments& args);
@@ -31,6 +32,8 @@ v8::Handle<v8::Value> MakeTransposeGen(const v8::Arguments& args);
 Handle<ObjectTemplate> MakeTransposeGenTemplate();
 v8::Handle<v8::Value> MakeScaleGen(const v8::Arguments& args);
 //Handle<Value> GetPitch(Local<String> name, const AccessorInfo& info);
+v8::Handle<v8::Value> MakeSeqGen(const v8::Arguments& args);
+Handle<ObjectTemplate> MakeSeqGenTemplate();
 
 typedef boost::variant<boost::shared_ptr<Music::Generator>, boost::shared_ptr<SongTrack> > MusicObject;
 
@@ -48,6 +51,7 @@ Persistent<Context> CreateV8Context()
 	global->Set(v8::String::New("pick"), v8::FunctionTemplate::New(MakeWeightedGen));
 	global->Set(v8::String::New("trans"), v8::FunctionTemplate::New(MakeTransposeGen));
 	global->Set(v8::String::New("scale"), v8::FunctionTemplate::New(MakeScaleGen));
+	global->Set(v8::String::New("seq"), v8::FunctionTemplate::New(MakeSeqGen));
 	
 	v8::Persistent<v8::Context> context = v8::Context::New(NULL, global);
 
@@ -590,6 +594,78 @@ Handle<Value> MakeWeightedGen(const Arguments& args) {
 	// Wrap the raw C++ pointer in an External so it can be referenced
 	// from within JavaScript.
 	MusicObject* obj = new MusicObject(weightedGen);
+	Handle<External> ptr = External::New(obj);
+
+	// Store the request pointer in the JavaScript wrapper.
+	result->SetInternalField(0, ptr);
+
+	// Return the result through the current handle scope.  Since each
+	// of these handles will go away when the handle scope is deleted
+	// we need to call Close to let one, the result, escape into the
+	// outer handle scope.
+	return handle_scope.Close(result);
+}
+
+Handle<ObjectTemplate> MakeSeqGenTemplate() {
+	HandleScope handle_scope;
+
+	Handle<ObjectTemplate> result = ObjectTemplate::New();
+	result->SetInternalFieldCount(1);
+
+	// Add accessors
+
+	// Again, return the result through the current handle scope.
+	return handle_scope.Close(result);
+}
+
+Handle<Value> MakeSeqGen(const Arguments& args) {
+	HandleScope handle_scope;
+
+	Local<Value> arg = args[0];
+
+	double startValue = 0;
+	if (!arg->IsNumber()) {
+		cerr << "Arg 1 to seq gen must be a number" << endl;
+	}
+	startValue = arg->NumberValue();
+
+	arg = args[1];
+	Music::GeneratorSharedPtr stepGen;
+	if (arg->IsNumber()) {
+		double value = arg->NumberValue();
+		stepGen.reset(new Music::SingleValueGenerator<double>(value));
+	}
+	else if (arg->IsObject()) {
+		MusicObject* obj = ExtractObjectFromJSWrapper<MusicObject>(arg->ToObject());
+		stepGen = boost::get< Music::GeneratorSharedPtr >(*obj);
+	}
+	else {
+		cout << "Error: Do not know how to handle second arg of seq" << endl;
+	}
+
+	arg = args[2];
+	double numIter;
+	if (!arg->IsNumber()) {
+		cerr << "Arg 1 to seq gen must be a number" << endl;
+	}
+	numIter = arg->NumberValue();
+
+	boost::shared_ptr<Music::SequenceGenerator> seqGen( new Music::SequenceGenerator(startValue, stepGen, numIter) );
+
+	// Fetch the template for creating JavaScript http request wrappers.
+	// It only has to be created once, which we do on demand.
+	if (gSeqGenTemplate.IsEmpty()) {
+		Handle<ObjectTemplate> raw_template = MakeSeqGenTemplate();
+		gSeqGenTemplate = Persistent<ObjectTemplate>::New(raw_template);
+	}
+	Handle<ObjectTemplate> templ = gSeqGenTemplate;
+
+	// Create an empty object wrapper.
+	Handle<Object> result = gSeqGenTemplate->NewInstance();
+
+	// Wrap the raw C++ pointer in an External so it can be referenced
+	// from within JavaScript.
+	MusicObject* obj = new MusicObject(seqGen);
 	Handle<External> ptr = External::New(obj);
 
 	// Store the request pointer in the JavaScript wrapper.
