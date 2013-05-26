@@ -633,13 +633,21 @@ Handle<Value> MakeTransposeGen(const Arguments& args) {
 	Music::GeneratorSharedPtr gen = boost::get<Music::GeneratorSharedPtr>(*musicObj);
 
 	arg = args[1];
-	if (!arg->IsNumber()){
-		cerr << "Second argument to TransposeGen must be a number!" << endl;
-		return Handle<Value>();
-	}
-	double transposeAmount = arg->NumberValue();
 
-	boost::shared_ptr<Music::TransposeGenerator> transposeGen( new Music::TransposeGenerator(gen, transposeAmount) );
+	Music::GeneratorSharedPtr transGen;
+	if (arg->IsNumber()) {
+		double value = arg->NumberValue();
+		transGen.reset(new Music::SingleValueGenerator<double>(value));
+	}
+	else if (arg->IsObject()) {
+		MusicObject* obj = ExtractObjectFromJSWrapper<MusicObject>(arg->ToObject());
+		transGen = boost::get< Music::GeneratorSharedPtr >(*obj);
+	}
+	else {
+		cout << "Error: Do not know how to handle second arg of transpose" << endl;
+	}
+
+	boost::shared_ptr<Music::TransposeGenerator> transposeGen( new Music::TransposeGenerator(gen, transGen) );
 
 	// Fetch the template for creating JavaScript http request wrappers.
 	// It only has to be created once, which we do on demand.

@@ -292,9 +292,15 @@ ValueListSharedPtr TransposeGenerator::Generate()
 
 	const ScaleInfo* info = &scaleInfo[scale.type];
 	
-	short transOctave = (short)transposeAmount_;
-	bool isNegative = (transposeAmount_ < 0);
-	short transDegree = (short)(fabs(transposeAmount_ - (short)transposeAmount_) * 100 + 0.5); // round to nearest hundredth
+	ValueListSharedPtr transGenResult = transGen_->Generate();
+	double* transposeAmount = boost::get<double>(transGenResult->at(0).get());
+	if (!transposeAmount) {
+		return ValueListSharedPtr();
+	}
+
+	short transOctave = (short)*transposeAmount;
+	bool isNegative = (*transposeAmount < 0);
+	short transDegree = (short)(fabs(*transposeAmount - (short)*transposeAmount) * 100 + 0.5); // round to nearest hundredth
 	if (isNegative) {
 		transDegree *= -1;
 	}
