@@ -321,15 +321,15 @@ ValueListSharedPtr SequenceGenerator::Generate()
 	if (!stepAmount) {
 		return ValueListSharedPtr();
 	}
-
-	double value = startValue_ + (index_ * (*stepAmount));
-	index_++;
-	if (index_ >= numIterations_) {
-		index_ = 0;
+	if (!value_) {
+		value_ = new double(startValue_);
+	}
+	else {
+		*value_ = *value_ + *stepAmount;
 	}
 
 	boost::shared_ptr<ValueList> result(new ValueList);
-	result->push_back(ValueSharedPtr(new Value(value)));
+	result->push_back(ValueSharedPtr(new Value(*value_)));
 	return result;
 }
 

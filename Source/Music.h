@@ -9,6 +9,7 @@
 #include <list>
 #include <boost/variant.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/optional.hpp>
 //#include <boost/thread.hpp>
 
 namespace Music
@@ -175,14 +176,14 @@ class SequenceGenerator : public Generator
 {
 public:
 	SequenceGenerator(double startValue, GeneratorSharedPtr stepSizeGen, int numIterations) 
-		: startValue_(startValue), stepSizeGen_(stepSizeGen), numIterations_(numIterations), index_(0) {}
+		: value_(NULL), startValue_(startValue), stepSizeGen_(stepSizeGen), numIterations_(numIterations) {}
 	virtual ValueListSharedPtr Generate();
 
 private:
+	double* value_;
 	double startValue_;
 	GeneratorSharedPtr stepSizeGen_;
 	int numIterations_;
-	int index_;
 };
 typedef boost::shared_ptr<TransposeGenerator> TransposeGenPtr;
 
