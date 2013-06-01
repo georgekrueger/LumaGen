@@ -176,7 +176,7 @@ class SequenceGenerator : public Generator
 {
 public:
 	SequenceGenerator(double startValue, GeneratorSharedPtr stepSizeGen, int numIterations) 
-		: value_(NULL), startValue_(startValue), stepSizeGen_(stepSizeGen), numIterations_(numIterations) {}
+		: value_(NULL), startValue_(startValue), stepSizeGen_(stepSizeGen), numIterations_(numIterations), count_(0) {}
 	virtual ValueListSharedPtr Generate();
 
 private:
@@ -184,6 +184,7 @@ private:
 	double startValue_;
 	GeneratorSharedPtr stepSizeGen_;
 	int numIterations_;
+	int count_;
 };
 typedef boost::shared_ptr<TransposeGenerator> TransposeGenPtr;
 
