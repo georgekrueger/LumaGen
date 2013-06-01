@@ -576,6 +576,10 @@ Handle<Value> MakeWeightedGen(const Arguments& args) {
 				}
 			}
 		}
+		else {
+			Music::GeneratorSharedPtr genPtr = GetGeneratorFromJSValue(arg, true);
+			gens.push_back( make_pair(genPtr, 1.0 * WEIGHT_SCALE) );
+		}
 	}
 
 	boost::shared_ptr<Music::WeightedGenerator> weightedGen( new Music::WeightedGenerator(gens) );
