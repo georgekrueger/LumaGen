@@ -52,7 +52,7 @@ public:
         // initialise our settings file..
 
         PropertiesFile::Options options;
-        options.applicationName     = "Juce Audio Plugin Host";
+        options.applicationName     = "Luma";
         options.filenameSuffix      = "settings";
         options.osxLibrarySubFolder = "Preferences";
 
