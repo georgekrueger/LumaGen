@@ -650,7 +650,7 @@ Handle<Value> MakeSeqGen(const Arguments& args) {
 	arg = args[2];
 	double numIter;
 	if (!arg->IsNumber()) {
-		cerr << "Arg 1 to seq gen must be a number" << endl;
+		cerr << "Arg 2 to seq gen must be a number" << endl;
 	}
 	numIter = arg->NumberValue();
 
