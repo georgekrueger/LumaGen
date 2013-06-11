@@ -321,7 +321,7 @@ ValueListSharedPtr SequenceGenerator::Generate()
 	if (!stepAmount) {
 		return ValueListSharedPtr();
 	}
-	if (!value_ || count_ >= numIterations_) {
+	if (!value_ || (numIterations_ != 0 && count_ >= numIterations_)) {
 		value_ = new double(startValue_);
 		count_ = 0;
 	}

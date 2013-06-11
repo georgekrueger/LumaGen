@@ -647,12 +647,14 @@ Handle<Value> MakeSeqGen(const Arguments& args) {
 		cout << "Error: Do not know how to handle second arg of seq" << endl;
 	}
 
-	arg = args[2];
-	double numIter;
-	if (!arg->IsNumber()) {
-		cerr << "Arg 2 to seq gen must be a number" << endl;
+	double numIter = 0;
+	if (args.Length() > 2) {
+		arg = args[2];
+		if (!arg->IsNumber()) {
+			cerr << "Arg 2 to seq gen must be a number (num iterations)" << endl;
+		}
+		numIter = arg->NumberValue();
 	}
-	numIter = arg->NumberValue();
 
 	boost::shared_ptr<Music::SequenceGenerator> seqGen( new Music::SequenceGenerator(startValue, stepGen, numIter) );
 
