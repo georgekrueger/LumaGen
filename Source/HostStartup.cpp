@@ -116,7 +116,7 @@ public:
             JUCEApplication::quit();
     }
 
-    const String getApplicationName()       { return "Juce Plug-In Host"; }
+    const String getApplicationName()       { return "Luma"; }
     const String getApplicationVersion()    { return ProjectInfo::versionString; }
     bool moreThanOneInstanceAllowed()       { return true; }
 
