@@ -1075,6 +1075,7 @@ void GraphDocumentComponent::buttonClicked (Button* button)
 		graphPlayer.setProcessor (&graph.getGraph());
 	}
 	else if (button == stopButton) {
+		keyState.allNotesOff(0);
 		graphPlayer.setProcessor (nullptr);
 	}
 }

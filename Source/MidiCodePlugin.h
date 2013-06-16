@@ -42,6 +42,7 @@ private:
 	int sampleCount_;
 	Music::Track* track_;
 	String code_;
+	bool clearAllNotes_;
 };
 
 class GFormatPluginFormat   : public AudioPluginFormat

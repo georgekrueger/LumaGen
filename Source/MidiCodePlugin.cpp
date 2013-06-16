@@ -44,6 +44,7 @@ void MidiCodePlugin::prepareToPlay (double sampleRate, int estimatedSamplesPerBl
 			//w.setVisible(true);		
 		}
 	}
+	clearAllNotes_ = true;
 }
 
 void MidiCodePlugin::releaseResources()
@@ -54,6 +55,14 @@ void MidiCodePlugin::releaseResources()
 
 void MidiCodePlugin::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
 {
+	if (clearAllNotes_) {
+		for (int i=0; i<128; i++) {
+			MidiMessage msg = MidiMessage::noteOff(1, i, 0.0);
+			midiMessages.addEvent (msg, static_cast<int>(0));
+		}
+		clearAllNotes_ = false;
+	}
+
 	int numSamples = buffer.getNumSamples();
 	int sampleCountPre = sampleCount_;
 	sampleCount_ += numSamples;
