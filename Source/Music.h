@@ -62,7 +62,7 @@ struct Rest
 typedef boost::shared_ptr<Note> NoteSharedPtr;
 typedef boost::shared_ptr<Rest> RestSharedPtr;
 
-typedef boost::variant<std::string, int, double, NoteSharedPtr, RestSharedPtr> Value;
+typedef boost::variant<std::string, double, NoteSharedPtr, RestSharedPtr> Value;
 typedef boost::shared_ptr<Value> ValueSharedPtr;
 
 class Generator;

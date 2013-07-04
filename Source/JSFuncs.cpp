@@ -193,7 +193,7 @@ void ReportException(v8::TryCatch* try_catch) {
   }
 }
 
-Music::GeneratorSharedPtr GetGeneratorFromJSValue(Handle<Value> value, bool interpretIntAsFloat)
+Music::GeneratorSharedPtr GetGeneratorFromJSValue(Handle<Value> value)
 {
 	Music::GeneratorSharedPtr gen;
 	if (value->IsString()) {
@@ -201,14 +201,13 @@ Music::GeneratorSharedPtr GetGeneratorFromJSValue(Handle<Value> value, bool inte
 		string pitchStr = string(ToCString(str));
 		gen.reset(new Music::SingleValueGenerator<string>(pitchStr));
 	}
-	else if (value->IsUint32() || value->IsInt32()) {
+	else if (value->IsUint32() ) {
+		unsigned int val = value->Uint32Value();
+		gen.reset(new Music::SingleValueGenerator<double>(val));
+	}
+	else if ( value->IsInt32() ) {
 		int val = value->Int32Value();
-		if (interpretIntAsFloat) {
-			gen.reset(new Music::SingleValueGenerator<double>(val));
-		}
-		else {
-			gen.reset(new Music::SingleValueGenerator<int>(val));
-		}
+		gen.reset(new Music::SingleValueGenerator<double>(val));
 	}
 	else if (value->IsNumber()) {
 		double val = value->NumberValue();
@@ -251,8 +250,8 @@ Handle<Value> MakeNote(const Arguments& args) {
 
 	arg = args[1];
 	if (arg->IsNumber()) {
-		short value = arg->Uint32Value();
-		velGen.reset(new Music::SingleValueGenerator<int>(value));
+		double value = arg->NumberValue();
+		velGen.reset(new Music::SingleValueGenerator<double>(value));
 	}
 	else if (arg->IsObject()) {
 		MusicObject* obj = ExtractObjectFromJSWrapper<MusicObject>(arg->ToObject());
@@ -501,7 +500,7 @@ Handle<Value> MakePattern(const Arguments& args) {
 	}
 	else
 	{
-		int value = arg->NumberValue();
+		double value = arg->NumberValue();
 		repeatGen.reset(new Music::SingleValueGenerator<double>(value));
 	}
 
@@ -583,7 +582,7 @@ Handle<Value> MakeWeightedGen(const Arguments& args) {
 			Array* arr = Array::Cast(*arg);
 			if (arr->Length() == 2) {
 				Local<Value> genValue = arr->Get(0);
-				Music::GeneratorSharedPtr genPtr = GetGeneratorFromJSValue(genValue, true);
+				Music::GeneratorSharedPtr genPtr = GetGeneratorFromJSValue(genValue);
 				Local<Value> weightValue = arr->Get(1);
 				if (weightValue->IsNumber()) {
 					double weight = weightValue->NumberValue();
@@ -593,7 +592,7 @@ Handle<Value> MakeWeightedGen(const Arguments& args) {
 			}
 		}
 		else {
-			Music::GeneratorSharedPtr genPtr = GetGeneratorFromJSValue(arg, true);
+			Music::GeneratorSharedPtr genPtr = GetGeneratorFromJSValue(arg);
 			gens.push_back( make_pair(genPtr, 1.0 * WEIGHT_SCALE) );
 		}
 	}

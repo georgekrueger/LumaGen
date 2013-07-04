@@ -10,7 +10,6 @@ int round(double d)
   return floor(d + 0.5);
 }
 
-
 namespace Music
 {
 
@@ -65,6 +64,21 @@ unsigned short GetPitchNumberFromName(string PitchName)
 	return 0;
 }
 
+unsigned short GetMidiPitchFromOffset(Scale scale, int offset)
+{
+	// degree cannot be less than one
+	if (offset < 1) offset = 1;
+
+	const ScaleInfo* info = &scaleInfo[scale.type];
+	int octave = (offset-1) / info->numIntervals;
+	int degree = ((offset-1) % info->numIntervals) + 1;
+	short midiPitch = 12 * octave + scale.root;
+	if (degree <= info->numIntervals) {
+		midiPitch += info->intervals[degree-1];
+	}
+	return midiPitch;
+}
+
 unsigned short GetMidiPitch(Scale scale, int octave, int degree)
 {
 	const ScaleInfo* info = &scaleInfo[scale.type];
@@ -109,8 +123,11 @@ bool GetScalePitchFromMidiPitch(short pitch, Scale scale, short& octave, short& 
 
 // Take a midi pitch note number and transpose by octave and degree, 
 // according to the given scale and return a midi pitch
-short TransposePitch( short pitch, Scale scale, short transOctave, short transDegree )
+short TransposePitch( short pitch, Scale scale, int transposeAmount )
 {
+	const ScaleInfo* info = &scaleInfo[scale.type];
+	int transOctave = transposeAmount / info->numIntervals;
+	int transDegree = transposeAmount % info->numIntervals;
 	short octave, degree;
 	bool foundPitch = GetScalePitchFromMidiPitch(pitch, scale, octave, degree);
 	if (foundPitch) {
@@ -129,7 +146,7 @@ double BeatsToMilliseconds(double beats)
 void ParseScaleString(const std::string& str, Scale& scale)
 {
 	scale.type = NO_SCALE;
-	scale.root = 60;
+	scale.root = 0;
 
 	size_t firstSplit = str.find('_', 0);
 	if (firstSplit == string::npos)
@@ -159,17 +176,9 @@ ValueListSharedPtr NoteGenerator::Generate()
 	Scale scale;
 	ParseScaleString(globalScale, scale);
 
-	short pitch;
+	short midiPitch = 60;
 	if (double* pitchRep = boost::get<double>(pitchResult->at(0).get())) {
-		// parse pitch as string
-		double p = *pitchRep;
-		short octave = (short)p;
-		short degree = (short)((p - (short)p) * 100 + 0.5); // round to nearest hundredth
-		pitch = GetMidiPitch(scale, octave, degree);
-	}
-	else if (int* pitchInt = boost::get<int>(pitchResult->at(0).get())) {
-		// parse pitch as int
-		pitch = *pitchInt;
+		midiPitch = GetMidiPitchFromOffset(scale, round(*pitchRep));
 	}
 
 	double* velocityPtr = boost::get<double>(velocityResult->at(0).get());
@@ -186,7 +195,7 @@ ValueListSharedPtr NoteGenerator::Generate()
 
 	// Create and return a note value
 	NoteSharedPtr note = NoteSharedPtr(new Note);
-	note->pitch = pitch;
+	note->pitch = midiPitch;
 	note->velocity = velocity;
 	note->length = length;
 
@@ -252,7 +261,7 @@ PatternGenSharedPtr PatternGenerator::MakeStatic()
 				ValueSharedPtr valuePtr = valueList->at(k);
 				if (NoteSharedPtr* note = boost::get<NoteSharedPtr>(valuePtr.get())) 
 				{
-					GeneratorSharedPtr pitchGen( new SingleValueGenerator<int>((*note)->pitch) );
+					GeneratorSharedPtr pitchGen( new SingleValueGenerator<double>((*note)->pitch) );
 					GeneratorSharedPtr velGen( new SingleValueGenerator<double>((*note)->velocity) );
 					GeneratorSharedPtr lenGen( new SingleValueGenerator<double>((*note)->length) );
 					NoteGenSharedPtr noteGen( new NoteGenerator(pitchGen, velGen, lenGen) );
@@ -267,7 +276,7 @@ PatternGenSharedPtr PatternGenerator::MakeStatic()
 		}
 	}
 
-	GeneratorSharedPtr repeatGen(new Music::SingleValueGenerator<int>(1));
+	GeneratorSharedPtr repeatGen(new Music::SingleValueGenerator<double>(1));
 	PatternGenSharedPtr newPatternGen(new PatternGenerator(gens , repeatGen));
 	return newPatternGen;
 }
@@ -312,19 +321,13 @@ ValueListSharedPtr TransposeGenerator::Generate()
 	if (!transposeAmount) {
 		return ValueListSharedPtr();
 	}
-
-	short transOctave = (short)*transposeAmount;
-	bool isNegative = (*transposeAmount < 0);
-	short transDegree = (short)(fabs(*transposeAmount - (short)*transposeAmount) * 100 + 0.5); // round to nearest hundredth
-	if (isNegative) {
-		transDegree *= -1;
-	}
+	int transpose = round(*transposeAmount);
 
 	boost::shared_ptr<ValueList> events = gen_->Generate();
 	for (int i=0; i<events->size(); i++) {
 		boost::shared_ptr<Value> value = events->at(i);
 		if (Music::NoteSharedPtr* note = boost::get<NoteSharedPtr>(value.get())) {
-			(*note)->pitch = TransposePitch( (*note)->pitch, scale, transOctave, transDegree );
+			(*note)->pitch = TransposePitch( (*note)->pitch, scale, transpose );
 		}
 	}
 	return events;
