@@ -469,9 +469,13 @@ Handle<Value> MakePattern(const Arguments& args) {
 	HandleScope handle_scope;
 
 	vector<Music::GeneratorSharedPtr> gens;
-	unsigned long repeat = 1;
+	Music::GeneratorSharedPtr repeatGen;
 
-	for (int i=0; i<args.Length(); i++)
+	if (args.Length() < 2) {
+		return v8::Undefined();
+	}
+
+	for (int i=0; i<args.Length()-1; i++)
 	{
 		Local<Value> arg = args[i];
 
@@ -481,16 +485,28 @@ Handle<Value> MakePattern(const Arguments& args) {
 			Music::GeneratorSharedPtr gen = boost::get<Music::GeneratorSharedPtr>(*obj);
 			gens.push_back(gen);
 		}
-		else if (arg->IsNumber())
-		{
-			repeat = arg->Uint32Value();
-		}
 	}
 
-	Music::PatternGenSharedPtr patternGen( new Music::PatternGenerator(gens, repeat) );
+	// last argument is repeat count
+	Local<Value> arg = args[args.Length()-1];
+	if (arg->IsObject())
+	{
+		MusicObject* obj = ExtractObjectFromJSWrapper<MusicObject>(arg->ToObject());
+		Music::GeneratorSharedPtr* gen = boost::get<Music::GeneratorSharedPtr>(obj);
+		if (!gen) {
+			cerr << "The repeat argument to pattern is an object but not a generator!" << endl;
+			return v8::Undefined();
+		}
+		repeatGen = *gen;
+	}
+	else
+	{
+		int value = arg->NumberValue();
+		repeatGen.reset(new Music::SingleValueGenerator<double>(value));
+	}
 
-	// Fetch the template for creating JavaScript http request wrappers.
-	// It only has to be created once, which we do on demand.
+	Music::PatternGenSharedPtr patternGen( new Music::PatternGenerator(gens, repeatGen) );
+
 	if (gPatternTemplate.IsEmpty()) {
 		Handle<ObjectTemplate> raw_template = MakePatternTemplate();
 		gPatternTemplate = Persistent<ObjectTemplate>::New(raw_template);

@@ -5,6 +5,12 @@
 using namespace std;
 using namespace boost;
 
+int round(double d)
+{
+  return floor(d + 0.5);
+}
+
+
 namespace Music
 {
 
@@ -212,7 +218,13 @@ ValueListSharedPtr RestGenerator::Generate()
 ValueListSharedPtr PatternGenerator::Generate()
 {
 	boost::shared_ptr<ValueList> outResult(new ValueList);
-	for (unsigned long j=0; j<repeat_; j++)
+	ValueListSharedPtr repeatRes = repeatGen_->Generate();
+	double* repeatResult = boost::get<double>(repeatRes->at(0).get());
+	if (!repeatResult) {
+		return outResult;
+	}
+	int repeat = round(*repeatResult);
+	for (unsigned long j=0; j<repeat; j++)
 	{
 		for (unsigned long i=0; i<items_.size(); i++)
 		{
@@ -226,8 +238,11 @@ ValueListSharedPtr PatternGenerator::Generate()
 PatternGenSharedPtr PatternGenerator::MakeStatic()
 {
 	std::vector<GeneratorSharedPtr> gens;
+	ValueListSharedPtr repeatRes = repeatGen_->Generate();
+	double* repeatResult = boost::get<double>(repeatRes->at(0).get());
+	int repeat = round(*repeatResult);
 
-	for (unsigned long j=0; j<repeat_; j++)
+	for (unsigned long j=0; j<repeat; j++)
 	{
 		for (unsigned long i=0; i<items_.size(); i++)
 		{
@@ -252,7 +267,8 @@ PatternGenSharedPtr PatternGenerator::MakeStatic()
 		}
 	}
 
-	PatternGenSharedPtr newPatternGen(new PatternGenerator(gens , 1));
+	GeneratorSharedPtr repeatGen(new Music::SingleValueGenerator<int>(1));
+	PatternGenSharedPtr newPatternGen(new PatternGenerator(gens , repeatGen));
 	return newPatternGen;
 }
 

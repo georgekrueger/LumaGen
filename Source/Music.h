@@ -136,14 +136,15 @@ typedef boost::shared_ptr<RestGenerator> RestGenSharedPtr;
 class PatternGenerator : public Generator
 {
 public:
-	PatternGenerator(std::vector<GeneratorSharedPtr> items , unsigned long repeat) : Generator(), items_(items), repeat_(repeat) {}
+	PatternGenerator(std::vector<GeneratorSharedPtr> items , GeneratorSharedPtr repeatGen) 
+		: Generator(), items_(items), repeatGen_(repeatGen) {}
 	virtual ValueListSharedPtr Generate();
 
 	boost::shared_ptr<PatternGenerator> MakeStatic();
 
 private:
 	std::vector<GeneratorSharedPtr> items_;
-	unsigned long repeat_;
+	GeneratorSharedPtr repeatGen_;
 };
 typedef boost::shared_ptr<PatternGenerator> PatternGenSharedPtr;
 
