@@ -85,12 +85,10 @@ void MidiCodePlugin::processBlock (AudioSampleBuffer& buffer, MidiBuffer& midiMe
 		if (Music::Track::NoteOffEvent* noteOffEvent = boost::get<Music::Track::NoteOffEvent>(&events[j])) {
 			MidiMessage msg = MidiMessage::noteOff(1, noteOffEvent->pitch, 0.0);
 			midiMessages.addEvent (msg, static_cast<int>(offsets[j]));
-			std::cout << "add note on event";
 		}
 		else if (Music::Track::NoteOnEvent* noteOnEvent = boost::get<Music::Track::NoteOnEvent>(&events[j])) {
 			MidiMessage msg = MidiMessage::noteOn(1, noteOnEvent->pitch, static_cast<float>(noteOnEvent->velocity));
 			midiMessages.addEvent (msg, static_cast<int>(offsets[j]));
-			std::cout << "add note off event";
 		}
 	}
 }

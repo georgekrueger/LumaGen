@@ -33,7 +33,6 @@
  #error "If you're building the audio plugin host, you probably want to enable VST and/or AU support"
 #endif
 
-
 ApplicationCommandManager* commandManager = nullptr;
 ApplicationProperties* appProperties = nullptr;
 v8::Persistent<v8::Context> context;
@@ -49,8 +48,6 @@ public:
 
     void initialise (const String& commandLine)
     {
-        // initialise our settings file..
-
         PropertiesFile::Options options;
         options.applicationName     = "Luma";
         options.filenameSuffix      = "settings";

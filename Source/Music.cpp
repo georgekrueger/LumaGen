@@ -177,7 +177,8 @@ ValueListSharedPtr NoteGenerator::Generate()
 	ParseScaleString(globalScale, scale);
 
 	short midiPitch = 60;
-	if (double* pitchRep = boost::get<double>(pitchResult->at(0).get())) {
+	double* pitchRep = NULL;
+	if (pitchRep = boost::get<double>(pitchResult->at(0).get())) {
 		midiPitch = GetMidiPitchFromOffset(scale, round(*pitchRep));
 	}
 
@@ -198,6 +199,8 @@ ValueListSharedPtr NoteGenerator::Generate()
 	note->pitch = midiPitch;
 	note->velocity = velocity;
 	note->length = length;
+
+	std::cout << "Note " << round(*pitchRep) << ", " << midiPitch << std::endl;
 
 	boost::shared_ptr<ValueList> result(new ValueList);
 	result->push_back(ValueSharedPtr(new Value(note)));
