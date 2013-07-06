@@ -51,7 +51,7 @@ Persistent<Context> CreateV8Context()
 	global->Set(v8::String::New("pick"), v8::FunctionTemplate::New(MakeWeightedGen));
 	global->Set(v8::String::New("trans"), v8::FunctionTemplate::New(MakeTransposeGen));
 	global->Set(v8::String::New("scale"), v8::FunctionTemplate::New(MakeScaleGen));
-	global->Set(v8::String::New("seq"), v8::FunctionTemplate::New(MakeSeqGen));
+	global->Set(v8::String::New("walk"), v8::FunctionTemplate::New(MakeSeqGen));
 	
 	v8::Persistent<v8::Context> context = v8::Context::New(NULL, global);
 

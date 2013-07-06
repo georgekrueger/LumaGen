@@ -35,7 +35,7 @@ public:
 	virtual void getStateInformation (juce::MemoryBlock& destData);
 	virtual void setStateInformation (const void* data, int sizeInBytes);
 
-	void setCode(const String& s) { code_ = s; std::cout << s << std::endl; }
+	void setCode(const String& s) { code_ = s; }
 
 private:
 	double sampleRate_;

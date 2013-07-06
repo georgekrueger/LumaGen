@@ -79,6 +79,22 @@ unsigned short GetMidiPitchFromOffset(Scale scale, int offset)
 	return midiPitch;
 }
 
+unsigned short GetOffsetFromMidiPitch(Scale scale, short midiPitch)
+{
+	const ScaleInfo* info = &scaleInfo[scale.type];
+	int octave = midiPitch / 12;
+	int offsetInOctave = midiPitch % 12;
+	int degree = 1;
+	for (unsigned int i=0; i<info->numIntervals; i++)
+	{
+		if (info->intervals[i] == offsetInOctave) {
+			degree = i + 1;
+			break;
+		}
+	}
+	return (octave * info->numIntervals + degree);
+}
+
 unsigned short GetMidiPitch(Scale scale, int octave, int degree)
 {
 	const ScaleInfo* info = &scaleInfo[scale.type];
@@ -254,6 +270,9 @@ PatternGenSharedPtr PatternGenerator::MakeStatic()
 	double* repeatResult = boost::get<double>(repeatRes->at(0).get());
 	int repeat = round(*repeatResult);
 
+	Scale scale;
+	ParseScaleString(globalScale, scale);
+
 	for (unsigned long j=0; j<repeat; j++)
 	{
 		for (unsigned long i=0; i<items_.size(); i++)
@@ -264,7 +283,7 @@ PatternGenSharedPtr PatternGenerator::MakeStatic()
 				ValueSharedPtr valuePtr = valueList->at(k);
 				if (NoteSharedPtr* note = boost::get<NoteSharedPtr>(valuePtr.get())) 
 				{
-					GeneratorSharedPtr pitchGen( new SingleValueGenerator<double>((*note)->pitch) );
+					GeneratorSharedPtr pitchGen( new SingleValueGenerator<double>(GetOffsetFromMidiPitch(scale, (*note)->pitch)) );
 					GeneratorSharedPtr velGen( new SingleValueGenerator<double>((*note)->velocity) );
 					GeneratorSharedPtr lenGen( new SingleValueGenerator<double>((*note)->length) );
 					NoteGenSharedPtr noteGen( new NoteGenerator(pitchGen, velGen, lenGen) );
