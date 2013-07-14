@@ -1,6 +1,7 @@
 #include "Music.h"
 #include <sstream>
 #include <ctime>
+#include <algorithm>
 
 using namespace std;
 using namespace boost;
@@ -192,23 +193,31 @@ ValueListSharedPtr NoteGenerator::Generate()
 	Scale scale;
 	ParseScaleString(globalScale, scale);
 
-	short midiPitch = 60;
+	int midiPitch = 60;
 	double* pitchRep = NULL;
 	if (pitchRep = boost::get<double>(pitchResult->at(0).get())) {
 		midiPitch = GetMidiPitchFromOffset(scale, round(*pitchRep));
 	}
+	midiPitch = min(max(midiPitch, 1), 127);
+	assert(midiPitch >= 1);
+	assert(midiPitch <= 127);
 
 	double* velocityPtr = boost::get<double>(velocityResult->at(0).get());
 	double velocity = 1.0;
 	if (velocityPtr != NULL) {
 		velocity = *velocityPtr;
 	}
+	velocity = min(max(velocity, 0.0), 1.0);
+	assert(velocity >= 0);
+	assert(velocity <= 1.0);
 
 	double* lengthPtr = boost::get<double>(lengthResult->at(0).get());
 	double length = 1.0;
 	if (lengthPtr != NULL) {
 		length = *lengthPtr;
 	}
+	length = max(length, 0.0);
+	assert(length >= 0);
 
 	// Create and return a note value
 	NoteSharedPtr note = NoteSharedPtr(new Note);
@@ -216,7 +225,7 @@ ValueListSharedPtr NoteGenerator::Generate()
 	note->velocity = velocity;
 	note->length = length;
 
-	std::cout << "Note " << round(*pitchRep) << ", " << midiPitch << std::endl;
+	std::cout << "Note (" << midiPitch << ", " << velocity << ", " << length << ")" << std::endl;
 
 	boost::shared_ptr<ValueList> result(new ValueList);
 	result->push_back(ValueSharedPtr(new Value(note)));
@@ -233,10 +242,14 @@ ValueListSharedPtr RestGenerator::Generate()
 	if (lengthPtr != NULL) {
 		length = *lengthPtr;
 	}
+	length = max(length, 0.0);
+	assert(length >= 0);
 
 	// Create and return a rest value
 	RestSharedPtr rest = RestSharedPtr(new Rest);
 	rest->length = length;
+
+	std::cout << "Rest (" << length << ")" << std::endl;
 
 	boost::shared_ptr<ValueList> result(new ValueList);
 	result->push_back(ValueSharedPtr(new Value(rest)));
